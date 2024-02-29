@@ -1,4 +1,6 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.example.app.">
+  <uses-permission android:name="android.permission.USE_BIOMETRICS"/>
     <application
         android:label="Sparks"
         android:name="${applicationName}"

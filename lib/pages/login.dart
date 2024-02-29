@@ -102,7 +102,7 @@ class _LoginPageState extends State<LoginPage> {
                         if (value!.isEmpty) {
                           return "Enter Password";
                         }
-                        if (passController.text.length < 8) {
+                        if (passController.text.length < 6) {
                           return 'Password must be at least 8 characters long';
                         }
                         if (!value.contains(RegExp(r'[A-Z]'))) {

@@ -34,7 +34,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       time: TimeOfDay.now(),
     ),
   ];
-
+  bool _isClicked = false;
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -61,38 +61,63 @@ class _NotificationsPageState extends State<NotificationsPage> {
             itemCount: _notifications.length,
             itemBuilder: (context, index) {
               final notification = _notifications[index];
-              return Card(
-                margin: EdgeInsets.all(5),
-                shadowColor: Color.fromARGB(255, 93, 95, 92),
-                elevation: 6,
-                child: ListTile(
-                  tileColor: Colors.white,
-                  contentPadding: EdgeInsets.all(20),
-                  leading: Icon(
-                    notification.type == NotificationType.alert
-                        ? Icons.warning
-                        : Icons.notifications,
-                    color: notification.type == NotificationType.alert
-                        ? Colors.red
-                        : Colors.blue,
+              return Dismissible(
+                  key: Key(notification.title),
+                  child: Card(
+                    shadowColor: Color.fromARGB(255, 93, 95, 92),
+                    elevation: 6,
+                    child: ListTile(
+                        tileColor: Colors.white,
+                        contentPadding: EdgeInsets.all(10),
+                        leading: Icon(
+                          notification.type == NotificationType.alert
+                              ? Icons.warning
+                              : Icons.notifications,
+                          color: notification.type == NotificationType.alert
+                              ? Colors.red
+                              : Colors.blue,
+                        ),
+                        title: Text(notification.title),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 8),
+                            Text(notification.message),
+                            SizedBox(height: 8),
+                            Text(
+                                '${DateFormat('MM/dd/yyyy').format(notification.date)} at ${notification.time.format(context)}'),
+                          ],
+                        ),
+                        trailing: Icon(
+                          _isClicked ? Icons.check : Icons.circle_rounded,
+                          color: Colors.green,
+                        ),
+                        onTap: () {
+                          setState(() {
+                            _isClicked = !_isClicked;
+                          });
+                          Navigator.of(context)
+                              .pushReplacement(MaterialPageRoute(
+                            builder: (context) => const Dashboard(),
+                          ));
+                        }),
                   ),
-                  title: Text(notification.title),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(notification.message),
-                      SizedBox(height: 8),
-                      Text(
-                          '${DateFormat('MM/dd/yyyy').format(notification.date)} at ${notification.time.format(context)}'),
-                    ],
+                  direction: DismissDirection.horizontal,
+                  background: Container(
+                    color: Colors.redAccent,
+                    child: Icon(
+                      Icons.delete,
+                      color: Colors.white,
+                    ),
+                    alignment: Alignment.centerRight,
+                    padding: EdgeInsets.only(right: 20),
+                    margin: EdgeInsets.symmetric(horizontal: 15),
                   ),
-                  onTap: () {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (context) => const Dashboard(),
-                    ));
-                  },
-                ),
-              );
+                  onDismissed: (direction) {
+                    setState(() {
+                      _notifications.removeAt(index);
+                    });
+                  });
             },
           ),
         ),

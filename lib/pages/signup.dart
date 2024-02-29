@@ -15,11 +15,11 @@ class SignPage extends StatefulWidget {
 
 class _SignPageState extends State<SignPage> {
   final _formfield = GlobalKey<FormState>();
-  final nicknameController = TextEditingController();
-  final plateController = TextEditingController();
-  final emailController = TextEditingController();
-  final newpassController = TextEditingController();
-  final confirmpasscontroller = TextEditingController();
+  final nickname = TextEditingController();
+  final plate = TextEditingController();
+  final email = TextEditingController();
+  final newpass = TextEditingController();
+  final confirmpass = TextEditingController();
   bool passToggle = true;
 
   @override
@@ -53,7 +53,7 @@ class _SignPageState extends State<SignPage> {
                     //nickname
                     TextFormField(
                       keyboardType: TextInputType.name,
-                      controller: nicknameController,
+                      controller: nickname,
                       decoration: InputDecoration(
                         label: const Text('Nickname'),
                         hintText: "Enter your nickname",
@@ -74,7 +74,7 @@ class _SignPageState extends State<SignPage> {
                     //plate number
                     TextFormField(
                         keyboardType: TextInputType.name,
-                        controller: plateController,
+                        controller: plate,
                         decoration: InputDecoration(
                           label: const Text('Plate number'),
                           hintText: "Enter your car's plate number",
@@ -91,7 +91,7 @@ class _SignPageState extends State<SignPage> {
                     //email
                     TextFormField(
                       keyboardType: TextInputType.emailAddress,
-                      controller: emailController,
+                      controller: email,
                       decoration: InputDecoration(
                         label: const Text('Email Adress'),
                         hintText: "Enter your Email Address",
@@ -115,7 +115,7 @@ class _SignPageState extends State<SignPage> {
                     //new password
                     TextFormField(
                       keyboardType: TextInputType.visiblePassword,
-                      controller: newpassController,
+                      controller: newpass,
                       obscureText: passToggle,
                       decoration: InputDecoration(
                         label: const Text('Password'),
@@ -128,7 +128,7 @@ class _SignPageState extends State<SignPage> {
                         if (value!.isEmpty) {
                           return "Enter Password";
                         }
-                        if (newpassController.text.length < 8) {
+                        if (newpass.text.length < 6) {
                           return 'Password must be at least 8 characters long';
                         }
                         if (!value.contains(RegExp(r'[A-Z]'))) {
@@ -146,7 +146,7 @@ class _SignPageState extends State<SignPage> {
                     //confirmpassword
                     TextFormField(
                       keyboardType: TextInputType.visiblePassword,
-                      controller: confirmpasscontroller,
+                      controller: confirmpass,
                       obscureText: passToggle,
                       decoration: InputDecoration(
                         label: const Text('Password'),
@@ -169,7 +169,7 @@ class _SignPageState extends State<SignPage> {
                         if (value!.isEmpty) {
                           return "Enter Password";
                         }
-                        if (value != newpassController.text) {
+                        if (value != newpass.text) {
                           return 'Passwords do not match';
                         }
                         return null;
@@ -185,11 +185,11 @@ class _SignPageState extends State<SignPage> {
                       onTap: () {
                         if (_formfield.currentState!.validate()) {
                           print("Success");
-                          nicknameController.clear();
-                          plateController.clear();
-                          emailController.clear();
-                          newpassController.clear();
-                          confirmpasscontroller.clear();
+                          nickname.clear();
+                          plate.clear();
+                          email.clear();
+                          newpass.clear();
+                          confirmpass.clear();
                           Navigator.of(context)
                               .pushReplacement(MaterialPageRoute(
                             builder: (context) => const Dashboard(),

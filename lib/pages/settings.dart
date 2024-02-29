@@ -1,64 +1,151 @@
 import 'package:flutter/material.dart';
 import 'package:sparks/main.dart';
-import 'package:sparks/pages/accsettings.dart';
-import 'package:sparks/widgets/bgsign.dart';
 
-class Settings extends StatelessWidget {
+import 'package:sparks/widgets/pages.dart';
+
+class Settings extends StatefulWidget {
   const Settings({super.key});
 
+  @override
+  State<Settings> createState() => _SettingsState();
+}
+
+class _SettingsState extends State<Settings> {
+  bool _showForm = false;
+  bool _passChange = false;
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        BackgroundSign(),
+        PagesBackground(),
         Scaffold(
           backgroundColor: Color.fromARGB(0, 255, 255, 255),
-          appBar: AppBar(
-            iconTheme: IconThemeData(color: Colors.black),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            title: Text(
-              'Settings',
-              style: TextStyle(
-                fontSize: 25,
-                color: Colors.black,
+          appBar: PreferredSize(
+            preferredSize: Size.fromHeight(130),
+            child: AppBar(
+              iconTheme: IconThemeData(color: Colors.white),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              title: Text(
+                'Settings',
+                style: TextStyle(
+                  fontSize: 25,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
           body: ListView(
-            padding: EdgeInsets.symmetric(vertical: 10),
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.8),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                  color: Colors.white,
                 ),
                 child: ListTile(
                   leading: Icon(Icons.account_circle),
                   title: Text('Account Settings'),
-                  trailing: Icon(Icons.arrow_forward_ios),
-                  onTap: () {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (context) => AccountSettingsPage(),
-                    ));
-                  },
+                  trailing: IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: () {
+                      setState(() {
+                        _showForm = !_showForm;
+                      });
+                    },
+                  ),
                 ),
               ),
-              SizedBox(
-                height: 20,
-              ),
+              if (_showForm)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                  decoration: BoxDecoration(color: Colors.white),
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Nickname',
+                        ),
+                      ),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Plate Number',
+                        ),
+                      ),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                        ),
+                      ),
+                      Container(
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: 'Current Password',
+                            suffixIcon: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _passChange = !_passChange;
+                                });
+                              },
+                              child: Icon(Icons.edit),
+                            ),
+                          ),
+                          obscureText: true,
+                        ),
+                      ),
+                      if (_passChange)
+                        Column(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 15),
+                              decoration: BoxDecoration(color: Colors.white),
+                              child: TextFormField(
+                                decoration: InputDecoration(
+                                  labelText: 'New Password',
+                                ),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                // Save changes and hide the form
+                                setState(() {
+                                  _passChange = false;
+                                });
+                              },
+                              child: Text('Save New Password'),
+                            ),
+                          ],
+                        ),
+                      ElevatedButton(
+                        onPressed: () {
+                          // Save changes and hide the form
+                          setState(() {
+                            _showForm = false;
+                          });
+                        },
+                        child: Text('Save Changes'),
+                      ),
+                    ],
+                  ),
+                ),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white,
                 ),
                 child: ListTile(
                   leading: Icon(Icons.exit_to_app),
                   title: Text('Log Out'),
-                  trailing: Icon(Icons.arrow_forward_ios),
-                  onTap: () {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (context) => const MyApp(),
-                    ));
-                  },
+                  trailing: IconButton(
+                    icon: Icon(Icons.arrow_forward_ios),
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (context) => const MyApp(),
+                      ));
+                    },
+                  ),
                 ),
               ),
             ],
