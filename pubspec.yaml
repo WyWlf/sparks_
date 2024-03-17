@@ -37,6 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   intl: ^0.18.1
   local_auth: ^2.2.0
+  fl_chart: ^0.66.2
+  pie_chart: ^5.4.0
 
  #page transition
   page_transition: ^2.1.0

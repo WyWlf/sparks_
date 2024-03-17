@@ -108,6 +108,7 @@ class _SettingsState extends State<Settings> {
                                 ),
                               ),
                             ),
+                            SizedBox(height: 10),
                             ElevatedButton(
                               onPressed: () {
                                 // Save changes and hide the form
@@ -115,10 +116,17 @@ class _SettingsState extends State<Settings> {
                                   _passChange = false;
                                 });
                               },
-                              child: Text('Save New Password'),
+                              style: ButtonStyle(
+                                elevation: MaterialStatePropertyAll(8),
+                                backgroundColor:
+                                    MaterialStatePropertyAll(Colors.white),
+                              ),
+                              child: Text('Save New Password',
+                                  style: TextStyle(color: Colors.black)),
                             ),
                           ],
                         ),
+                      SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () {
                           // Save changes and hide the form
@@ -126,7 +134,15 @@ class _SettingsState extends State<Settings> {
                             _showForm = false;
                           });
                         },
-                        child: Text('Save Changes'),
+                        style: ButtonStyle(
+                          elevation: MaterialStatePropertyAll(8),
+                          backgroundColor:
+                              MaterialStatePropertyAll(Colors.green),
+                        ),
+                        child: Text(
+                          'Save Changes',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ],
                   ),

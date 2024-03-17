@@ -1,7 +1,9 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:sparks/pages/guest.dart';
 import 'package:sparks/pages/login.dart';
 import 'package:sparks/pages/signup.dart';
 import 'package:sparks/widgets/bgimage.dart';
@@ -28,6 +30,15 @@ class MyApp extends StatelessWidget {
       home: const HomePage(),
     );
   }
+}
+
+// This widget is the root of your application.
+@override
+Widget build(BuildContext context) {
+  return MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: const HomePage(),
+  );
 }
 
 class HomePage extends StatelessWidget {
@@ -60,9 +71,10 @@ class HomePage extends StatelessWidget {
 
                         //Login Button
                         MaterialButton(
-                          minWidth: 230,
+                          minWidth: 200,
                           height: 50,
                           splashColor: Color.fromARGB(255, 178, 255, 174),
+                          elevation: 10,
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -82,13 +94,14 @@ class HomePage extends StatelessWidget {
                           ),
                         ),
                         SizedBox(
-                          height: 30,
+                          height: 20,
                         ),
 
                         //Sign Up Button
                         MaterialButton(
-                          minWidth: 230,
+                          minWidth: 190,
                           height: 50,
+                          elevation: 10,
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -108,9 +121,25 @@ class HomePage extends StatelessWidget {
                                 fontWeight: FontWeight.w500, fontSize: 25),
                           ),
                         ),
+
                         SizedBox(
                           height: 30,
                         ),
+                        RichText(
+                            text: TextSpan(children: <TextSpan>[
+                          TextSpan(
+                              text: ' Guest Mode ',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  backgroundColor:
+                                      Color.fromARGB(255, 51, 51, 51)),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () async {
+                                  Navigator.of(context).push(PageTransition(
+                                      child: GuestMode(),
+                                      type: PageTransitionType.fade));
+                                }),
+                        ]))
                       ],
                     ),
                   ],

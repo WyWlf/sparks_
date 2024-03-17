@@ -1,11 +1,11 @@
-// ignore_for_file: prefer_const_constructors
-
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:sparks/main.dart';
 import 'package:sparks/pages/map.dart';
 import 'package:sparks/pages/notifications.dart';
 import 'package:sparks/pages/reportform.dart';
 import 'package:sparks/pages/settings.dart';
+import 'package:sparks/pages/transac_history.dart';
 import 'package:sparks/widgets/pagesbg.dart';
 import 'package:sparks/widgets/pages.dart';
 import 'package:intl/intl.dart';
@@ -24,8 +24,19 @@ class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final formatter = DateFormat('yyyy-MM-dd, HH:mm:ss');
+    var time = DateTime.now();
+    final format = DateFormat('HH:mm:ss');
+    final formatter = DateFormat('yyyy-MM-dd');
+    final formattedTime = format.format(time);
     final formattedDate = formatter.format(now);
+
+    final available = 20;
+    final used = 30;
+    final total = available + used;
+
+// Calculate percentages for pie chart slices
+    final availablePercent = (available / total) * 100;
+    final usedPercent = (used / total) * 100;
 
     return Stack(
       children: [
@@ -52,7 +63,7 @@ class _DashboardState extends State<Dashboard> {
               actions: <Widget>[
                 GestureDetector(
                   onTap: () {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => const NotificationsPage(),
                     ));
                   },
@@ -150,123 +161,217 @@ class _DashboardState extends State<Dashboard> {
             ),
           ),
 
-          body: SingleChildScrollView(
-            //paytopark
-            child: Column(
+          //PARK TO PAY RECEIPT
+          body: Column(children: [
+            SizedBox(height: 20),
+            Stack(
+              alignment: Alignment.topCenter,
               children: [
-                Card(
-                  margin: EdgeInsets.all(10),
-                  elevation: 10,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                Container(
+                  height: 210,
+                  width: 370,
+                  color: Colors.white,
+                ),
+                Container(
+                  margin: EdgeInsets.all(5),
+                  height: 200,
+                  width: 360,
+                  color: Color.fromARGB(255, 51, 51, 51),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      SizedBox(
-                        height: 10,
-                      ),
                       Text(
-                        'PARK TO PAY',
-                        style: TextStyle(
-                            fontSize: 25, fontWeight: FontWeight.bold),
+                        'Time Started: ',
+                        style: TextStyle(color: Colors.white),
                       ),
-                      Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 60, vertical: 20),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Time Started: $formattedDate',
-                              style: TextStyle(fontSize: 15),
-                            ),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            Text(
-                              'Time Ended: $formattedDate ',
-                              style: TextStyle(fontSize: 15),
-                            ),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            Container(
-                              child: Text(
-                                'Total Hours: $totalHoursWorked',
-                                style: TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Text(
-                              'Total Payment:',
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              '$totalPayment',
-                              style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red),
-                            )
-                          ],
-                        ),
-                      )
+                      SizedBox(
+                        width: 30,
+                      ),
+                      Text('Total Hours:',
+                          style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
-
-                SizedBox(
-                  height: 20,
+                Container(),
+                Positioned(
+                  top: 115,
+                  left: 55,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Text('$formattedTime',
+                          style: TextStyle(
+                              color: Color.fromARGB(255, 67, 229, 4))),
+                      SizedBox(
+                        width: 160,
+                      ),
+                      Text(DateFormat.HOUR24_MINUTE_SECOND,
+                          style: TextStyle(
+                              color: Color.fromARGB(255, 67, 229, 4))),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: 140,
+                  child: Column(
+                    children: [
+                      Text('Total Amount: ',
+                          style: TextStyle(color: Colors.white)),
+                      Text('300.00',
+                          style: TextStyle(
+                              color: Color.fromARGB(255, 67, 229, 4),
+                              fontSize: 25))
+                    ],
+                  ),
+                ),
+                Container(
+                  alignment: Alignment.topCenter,
+                  padding: EdgeInsets.all(5),
+                  height: 40,
+                  width: 150,
+                  color: Colors.white,
+                  child: Text(
+                    'PAY TO PARK',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  ),
                 ),
 
-                //AVAILABLE PARKING SPACE BANNER
-                Column(
-                  children: [
-                    Container(
-                      width: 500,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
+                //TRANSACTION HISTORY
+
+                Container(
+                  padding: EdgeInsets.only(right: 10, top: 10),
+                  alignment: Alignment.topRight,
+                  child: PopupMenuButton(
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 1,
+                        child: Text("History"),
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => TransactionHistory()));
+                        },
                       ),
-                      child: Center(
-                        child: Text(
-                          'AVAILABLE PARKING SPACE',
-                          style: TextStyle(
-                              fontSize: 25, fontWeight: FontWeight.bold),
-                        ),
-                      ),
+                    ],
+                    child: Icon(
+                      Icons.more_vert,
+                      color: Colors.white,
                     ),
-                    SizedBox(
-                      height: 20,
+                  ),
+                ),
+                Positioned(
+                  top: 50,
+                  left: 130,
+                  child: RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        TextSpan(text: 'Date: '),
+                        TextSpan(
+                            text: formattedDate,
+                            style: TextStyle(
+                                color: Color.fromARGB(255, 67, 229, 4)))
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
-          ),
+            SizedBox(height: 30),
+
+            //title AVAILABLE PARKING SPACE
+            Container(
+              padding: EdgeInsets.all(10),
+              height: 50,
+              width: 500,
+              color: Color.fromARGB(255, 51, 51, 51),
+              child: Text(
+                'AVAILABLE PARKING SPACE',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+            ),
+
+            SizedBox(
+              height: 10,
+            ),
+
+            //PIE CHART AVAILABLE PARKING SPACES
+
+            Container(
+              height: 110,
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: PieChart(
+                  PieChartData(sections: [
+                    PieChartSectionData(
+                        value: availablePercent,
+                        title: 'Available',
+                        titleStyle: TextStyle(color: Colors.white),
+                        showTitle: true,
+                        color: Colors.green),
+                    PieChartSectionData(
+                        value: usedPercent,
+                        title: 'Used',
+                        titleStyle: TextStyle(color: Colors.white),
+                        showTitle: true,
+                        color: Colors.red),
+                  ]),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+
+            Positioned(
+              top: 230,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Text(
+                    'Total Available Parking Space: $available ($availablePercent%)',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'Used Parking Space : $used ($usedPercent%)',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  MaterialButton(
+                    minWidth: 150,
+                    height: 50,
+                    elevation: 10,
+                    padding: EdgeInsets.all(5),
+                    color: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    onPressed: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => MapPage()));
+                    },
+                    child: Text(
+                      'View Parking Map',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ]),
         ),
       ],
     );
   }
-}
-
-double totalhours(int hours) {
-  double totalHoursWorked = 5;
-  int initialPay = 20;
-  int addTime = 10;
-  int Total = 0;
-
-  for (int i = 0; 1 < hours; i++) {
-    if (i < 3) {
-      Total = initialPay;
-    } else {
-      initialPay += Total + addTime;
-    }
-  }
-  return totalHoursWorked;
 }

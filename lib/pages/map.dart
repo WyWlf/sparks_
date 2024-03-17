@@ -10,16 +10,22 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   int _currentFloor = 0;
-  int _availableSlots = 10;
+  late int _availableSlots;
 
   final List<String> _floorImages = [
     'images/parking_map_floor_1.jpg',
-    'images/parking_map_floor_1.jpg',
-    'images/parking_map_floor_1.jpg',
+    'images/parking_map_floor_2.jpg',
+    'images/parking_map_floor_3.jpg',
   ];
 
   @override
   Widget build(BuildContext context) {
+    _availableSlots = _currentFloor == 1
+        ? 10
+        : _currentFloor == 2
+            ? 5
+            : 20;
+
     return Stack(
       children: [
         PagesBackground(),
@@ -50,9 +56,10 @@ class _MapPageState extends State<MapPage> {
                   child: Text(
                     'Available Slots: $_availableSlots',
                     style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold),
+                      color: Colors.black,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),

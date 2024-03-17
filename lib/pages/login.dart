@@ -1,8 +1,11 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:sparks/api/local_auth_service.dart';
 import 'package:sparks/pages/dashboard.dart';
 import 'package:sparks/pages/signup.dart';
 import 'package:sparks/widgets/widget.dart';
@@ -18,6 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   final plateController = TextEditingController();
   final passController = TextEditingController();
   bool passToggle = true;
+  bool authenticated = false;
 
   @override
   Widget build(BuildContext context) {
@@ -120,11 +124,10 @@ class _LoginPageState extends State<LoginPage> {
 
                     //space
                     SizedBox(
-                      height: 50,
+                      height: 20,
                     ),
 
                     //LOGIN BUTTON
-
                     InkWell(
                       onTap: () {
                         if (_formfield.currentState!.validate()) {
@@ -140,10 +143,19 @@ class _LoginPageState extends State<LoginPage> {
                       child: Center(
                         child: Container(
                           padding: EdgeInsets.all(10),
+                          margin: EdgeInsets.only(bottom: 10),
                           width: 150,
                           decoration: BoxDecoration(
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              borderRadius: BorderRadius.circular(50)),
+                            color: Color.fromARGB(255, 255, 255, 255),
+                            borderRadius: BorderRadius.circular(50),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                offset: Offset(0.0, 7), //(x,y)
+                                blurRadius: 6.0,
+                              ),
+                            ],
+                          ),
                           child: Center(
                             child: Text(
                               'Login',
@@ -154,9 +166,49 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
+
+                    //space
+                    Row(children: <Widget>[
+                      Expanded(
+                          child: Divider(
+                        color: Colors.black54,
+                      )),
+                      Text("   OR   "),
+                      Expanded(
+                          child: Divider(
+                        color: Colors.black54,
+                      )),
+                    ]),
                     SizedBox(
                       height: 10,
                     ),
+                    //biometrics
+                    SizedBox(
+                      width: 150,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          final authenticate = await LocalAuth.authenticate();
+
+                          setState(() {
+                            authenticated = authenticate;
+                          });
+                          if (authenticated) {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => Dashboard()));
+                          }
+                        },
+                        icon: Icon(Icons.fingerprint),
+                        label: Text('Biometrics'),
+                      ),
+                    ),
+                    //space
+                    SizedBox(
+                      height: 30,
+                    ),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
