@@ -14,30 +14,31 @@ class _TransactionHistoryState extends State<TransactionHistory> {
     return Stack(children: [
       PagesBackground(),
       Scaffold(
-          backgroundColor: Color.fromARGB(0, 255, 255, 255),
-          appBar: PreferredSize(
-            preferredSize: Size.fromHeight(130),
+        backgroundColor: Color.fromARGB(0, 255, 255, 255),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(130),
 
-            //SPARKS
-            child: AppBar(
-              iconTheme: IconThemeData(color: Colors.white),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              title: Text(
-                'History',
-                style: TextStyle(
-                  fontSize: 30,
-                  color: Colors.white,
-                ),
+          //SPARKS
+          child: AppBar(
+            iconTheme: IconThemeData(color: Colors.white),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: Text(
+              'History',
+              style: TextStyle(
+                fontSize: 30,
+                color: Colors.white,
               ),
             ),
           ),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [Text("NO TRANSACTION HISTORY")],
-            ),
-          ))
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [Text("NO TRANSACTION HISTORY")],
+          ),
+        ),
+      ),
     ]);
   }
 }

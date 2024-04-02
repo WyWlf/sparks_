@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
+import 'dart:convert';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
@@ -7,11 +9,41 @@ import 'package:sparks/pages/dashboard.dart';
 import 'package:sparks/pages/login.dart';
 import 'package:sparks/widgets/widget.dart';
 import '../widgets/pallete.dart';
+import 'package:http/http.dart' as http;
 
 class SignPage extends StatefulWidget {
   @override
   State<SignPage> createState() => _SignPageState();
 }
+
+class RegisterModel {
+  String? nickname;
+  String? plate;
+  String? email;
+  String? password;
+
+  RegisterModel({this.nickname, this.plate, this.email, this.password});
+
+  factory RegisterModel.fromJson(Map<String, dynamic> json) {
+    return RegisterModel(
+      nickname: json['nickname'],
+      plate: json['plate'],
+      email: json['email'],
+      password: json['password'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'nickname': nickname,
+      'plate': plate,
+      'email': email,
+      'password': password,
+    };
+  }
+}
+
+void main() async {}
 
 class _SignPageState extends State<SignPage> {
   final _formfield = GlobalKey<FormState>();
@@ -21,6 +53,13 @@ class _SignPageState extends State<SignPage> {
   final newpass = TextEditingController();
   final confirmpass = TextEditingController();
   bool passToggle = true;
+  late RegisterModel _registerModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _registerModel = RegisterModel();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +189,7 @@ class _SignPageState extends State<SignPage> {
                       obscureText: passToggle,
                       decoration: InputDecoration(
                         label: const Text('Password'),
-                        hintText: "Enter your password!",
+                        hintText: "Re-Enter your password!",
                         prefixIcon: Icon(Icons.password),
                         suffixIcon: InkWell(
                           onTap: () {
@@ -181,19 +220,13 @@ class _SignPageState extends State<SignPage> {
 
                     //SignUp BUTTON
 
-                    InkWell(
-                      onTap: () {
+                    ElevatedButton(
+                      onPressed: () {
                         if (_formfield.currentState!.validate()) {
-                          print("Success");
-                          nickname.clear();
-                          plate.clear();
-                          email.clear();
-                          newpass.clear();
-                          confirmpass.clear();
-                          Navigator.of(context)
-                              .pushReplacement(MaterialPageRoute(
-                            builder: (context) => const Dashboard(),
-                          ));
+                          _formfield.currentState!.save();
+                          _registerUser();
+
+                          // call the _registerUser method
                         }
                       },
                       child: Center(
@@ -252,5 +285,41 @@ class _SignPageState extends State<SignPage> {
         ),
       ],
     );
+  }
+
+  void _registerUser() async {
+    final uri =
+        Uri.parse('https://young-cloud-49021.pktriot.net/api/addClientUsers');
+    final body = jsonEncode(_registerModel.toJson());
+    final headers = {'Content-Type': 'application/json'};
+
+    try {
+      final response = await http.post(uri, body: body, headers: headers);
+
+      if (response.statusCode == 201) {
+        // Registration successful
+        // Clear registration form fields
+        nickname.clear();
+        plate.clear();
+        email.clear();
+        newpass.clear();
+        confirmpass.clear();
+
+        // Navigate to the Dashboard screen, replacing the current screen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const Dashboard(),
+          ),
+        );
+      }
+    } catch (error) {
+      // Handle network errors or exceptions
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'An error occurred. Please check your connection and try again.'),
+        ),
+      );
+    }
   }
 }

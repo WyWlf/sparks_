@@ -5,6 +5,7 @@ import 'package:sparks/pages/map.dart';
 import 'package:sparks/pages/notifications.dart';
 import 'package:sparks/pages/reportform.dart';
 import 'package:sparks/pages/settings.dart';
+
 import 'package:sparks/pages/transac_history.dart';
 import 'package:sparks/widgets/pagesbg.dart';
 import 'package:sparks/widgets/pages.dart';
@@ -326,6 +327,7 @@ class _DashboardState extends State<Dashboard> {
             ),
             SizedBox(height: 20),
 
+            //summary of available parking space
             Positioned(
               top: 230,
               child: Column(

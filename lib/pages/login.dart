@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -10,18 +12,46 @@ import 'package:sparks/pages/dashboard.dart';
 import 'package:sparks/pages/signup.dart';
 import 'package:sparks/widgets/widget.dart';
 import '../widgets/pallete.dart';
+import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
+class LoginModel {
+  final String plate;
+  final String password;
+
+  LoginModel({required this.plate, required this.password});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'email': plate,
+      'password': password,
+    };
+  }
+}
+
+class ApiResponse {
+  final String token;
+
+  ApiResponse({required this.token});
+
+  factory ApiResponse.fromJson(Map<String, dynamic> json) {
+    return ApiResponse(
+      token: json['token'],
+    );
+  }
+}
+
 class _LoginPageState extends State<LoginPage> {
   final _formfield = GlobalKey<FormState>();
-  final plateController = TextEditingController();
-  final passController = TextEditingController();
+  final plate = TextEditingController();
+  final pass = TextEditingController();
   bool passToggle = true;
   bool authenticated = false;
+  late LoginModel _loginModel;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
                     //plate number
                     TextFormField(
                       keyboardType: TextInputType.emailAddress,
-                      controller: plateController,
+                      controller: plate,
                       decoration: InputDecoration(
                         label: const Text('Plate number'),
                         hintText: "Enter your car's plate number",
@@ -83,7 +113,7 @@ class _LoginPageState extends State<LoginPage> {
                     //password
                     TextFormField(
                       keyboardType: TextInputType.visiblePassword,
-                      controller: passController,
+                      controller: pass,
                       obscureText: passToggle,
                       decoration: InputDecoration(
                         label: const Text('Password'),
@@ -106,7 +136,7 @@ class _LoginPageState extends State<LoginPage> {
                         if (value!.isEmpty) {
                           return "Enter Password";
                         }
-                        if (passController.text.length < 6) {
+                        if (pass.text.length < 6) {
                           return 'Password must be at least 8 characters long';
                         }
                         if (!value.contains(RegExp(r'[A-Z]'))) {
@@ -128,16 +158,10 @@ class _LoginPageState extends State<LoginPage> {
                     ),
 
                     //LOGIN BUTTON
-                    InkWell(
-                      onTap: () {
+                    ElevatedButton(
+                      onPressed: () {
                         if (_formfield.currentState!.validate()) {
-                          print("Success");
-                          plateController.clear();
-                          passController.clear();
-                          Navigator.of(context)
-                              .pushReplacement(MaterialPageRoute(
-                            builder: (context) => Dashboard(),
-                          ));
+                          _loginUser();
                         }
                       },
                       child: Center(
@@ -245,5 +269,47 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ],
     );
+  }
+
+  void _loginUser() async {
+    final uri = Uri.parse('https://young-cloud-49021.pktriot.net/api/login');
+    final body = jsonEncode(_loginModel.toJson());
+    final headers = {'Content-Type': 'application/json'};
+
+    try {
+      final response = await http.post(uri, body: body, headers: headers);
+
+      if (response.statusCode == 201) {
+        // Clear login form fields
+
+        plate.clear();
+        pass.clear();
+
+        // Navigate to the Dashboard screen, replacing the current screen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const Dashboard(),
+          ),
+        );
+
+        // You can use the token here for further actions, e.g., storing it for future use
+      } else {
+        // Handle other status codes if needed
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'An error occurred. Please check your connection and try again.'),
+          ),
+        );
+      }
+    } catch (error) {
+      // Handle network errors or exceptions
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'An error occurred. Please check your connection and try again.'),
+        ),
+      );
+    }
   }
 }

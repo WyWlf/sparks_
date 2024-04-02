@@ -36,12 +36,30 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   intl: ^0.18.1
+
+  #biometrics
   local_auth: ^2.2.0
+
+  #chart
   fl_chart: ^0.66.2
   pie_chart: ^5.4.0
 
  #page transition
   page_transition: ^2.1.0
+
+#filepicker(evidences)
+  image_picker: ^0.8.4+2
+
+#mysql
+  http: ^1.2.1
+  mysql1: ^0.20.0
+  shared_preferences: ^2.2.2
+  get: ^4.6.6
+
+#convert_img
+  image: ^4.1.7
+
+  
 
 dev_dependencies:
   flutter_test:

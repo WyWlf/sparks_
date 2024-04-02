@@ -1,4 +1,9 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:sparks/pages/reporthistory.dart';
 import 'package:sparks/widgets/pages.dart';
 
@@ -12,6 +17,8 @@ class ReportPage extends StatefulWidget {
 class _ReportPageState extends State<ReportPage> {
   String _selectedType = 'damaged';
   bool _isFormVisible = false;
+  List<File?> _selectedImages = [];
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -89,16 +96,22 @@ class _ReportPageState extends State<ReportPage> {
                                   ),
                                 ],
                               ),
+
+                              //nickname
                               TextField(
                                 decoration: InputDecoration(
                                   labelText: 'Nickname',
                                 ),
                               ),
+
+                              //platenumber
                               TextField(
                                 decoration: InputDecoration(
                                   labelText: 'Plate number',
                                 ),
                               ),
+
+                              //title
                               SizedBox(
                                 height: 20,
                               ),
@@ -107,11 +120,15 @@ class _ReportPageState extends State<ReportPage> {
                                   style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold)),
+
+                              //reported plate number
                               TextField(
                                 decoration: InputDecoration(
                                   labelText: 'Plate number',
                                 ),
                               ),
+
+                              //parking issue
                               DropdownButtonFormField<String>(
                                 decoration: InputDecoration(
                                   labelText: 'Type of parking lot issue',
@@ -137,18 +154,87 @@ class _ReportPageState extends State<ReportPage> {
                                   ),
                                 ],
                               ),
+
+                              //concerns
                               TextField(
                                 decoration: InputDecoration(
                                   labelText:
                                       'Specify the issues found in the parking lot',
                                 ),
                               ),
-                              TextField(
-                                decoration: InputDecoration(
-                                  labelText: 'Evidence',
-                                  suffixIcon: Icon(Icons.add_a_photo),
-                                ),
+
+                              //upload evidences
+
+                              Row(
+                                  mainAxisAlignment: MainAxisAlignment
+                                      .spaceEvenly, // added line
+
+                                  children: [
+                                    Text('Submit Evidences',
+                                        style: TextStyle(fontSize: 18)),
+
+                                    SizedBox(
+                                      width: 100,
+                                    ),
+
+                                    //UPLOAD EVIDENCE OPTIONS
+
+                                    IconButton(
+                                      icon: Icon(Icons.add_a_photo),
+                                      onPressed: () async {
+                                        showModalBottomSheet(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: <Widget>[
+                                                //OpenGallery
+                                                ListTile(
+                                                  leading: Icon(Icons.photo),
+                                                  title: Text('Open Gallery'),
+                                                  onTap: () async {
+                                                    final images =
+                                                        await _pickImages();
+                                                    setState(() {
+                                                      _selectedImages = images;
+                                                    });
+                                                  },
+                                                ),
+
+                                                //Open Camera
+                                                ListTile(
+                                                  leading: Icon(Icons.camera),
+                                                  title: Text('Open Camera'),
+                                                  onTap: () async {
+                                                    final images =
+                                                        await _captureImages();
+                                                    setState(() {
+                                                      _selectedImages = images;
+                                                    });
+                                                  },
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ]),
+                              Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Text(
+                                      'Total Images: ${_selectedImages.length}'),
+                                  Container(
+                                      height: 200,
+                                      child: _selectedImages.isNotEmpty
+                                          ? Image.file(_selectedImages[0]!)
+                                          : Text("No Selected Images")),
+                                  Divider(color: Colors.black),
+                                ],
                               ),
+
                               SizedBox(
                                 height: 10,
                               ),
@@ -158,6 +244,7 @@ class _ReportPageState extends State<ReportPage> {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
+                                    //cancel button
                                     MaterialButton(
                                       height: 40,
                                       color: Color.fromARGB(255, 247, 246, 246),
@@ -176,6 +263,8 @@ class _ReportPageState extends State<ReportPage> {
                                     SizedBox(
                                       width: 30,
                                     ),
+
+                                    //confirm
                                     MaterialButton(
                                       height: 40,
                                       color: Color.fromARGB(255, 18, 229, 28),
@@ -201,5 +290,40 @@ class _ReportPageState extends State<ReportPage> {
         ),
       ],
     );
+  }
+
+  Widget _buildImageGrid() {
+    return GridView.count(
+      crossAxisCount: 3,
+      children: _selectedImages.map((image) {
+        return Image.file(
+          image!,
+          fit: BoxFit.cover,
+        );
+      }).toList(),
+    );
+  }
+
+  Future<List<File>> _pickImages() async {
+    final imagePicker = ImagePicker();
+    final List<XFile>? images = await imagePicker.pickMultiImage();
+    return images?.map((e) => File(e.path)).toList() ?? [];
+  }
+
+  Future _captureImages() async {
+    final imagePicker = ImagePicker();
+    List<File> images = [];
+    for (int i = 0; i < 5; i++) {
+      final returnedImage =
+          await imagePicker.pickImage(source: ImageSource.camera);
+      if (returnedImage != null) {
+        images.add(File(returnedImage.path));
+      } else {
+        break;
+      }
+    }
+    setState(() {
+      _selectedImages = images;
+    });
   }
 }

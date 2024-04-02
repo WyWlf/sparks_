@@ -10,12 +10,13 @@ import 'package:sparks/widgets/bgimage.dart';
 import 'package:sparks/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
   runApp(const MyApp());
 }
 
@@ -123,23 +124,29 @@ class HomePage extends StatelessWidget {
                         ),
 
                         SizedBox(
-                          height: 30,
+                          height: 25,
                         ),
-                        RichText(
-                            text: TextSpan(children: <TextSpan>[
-                          TextSpan(
-                              text: ' Guest Mode ',
-                              style: TextStyle(
+
+                        //Guest Mode
+                        Container(
+                          color: const Color.fromARGB(255, 69, 68, 68),
+                          width: MediaQuery.of(context).size.width / 4,
+                          padding: EdgeInsets.all(3),
+                          child: RichText(
+                              text: TextSpan(children: <TextSpan>[
+                            TextSpan(
+                                text: ' Guest Mode ',
+                                style: TextStyle(
                                   color: Colors.white,
-                                  backgroundColor:
-                                      Color.fromARGB(255, 51, 51, 51)),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () async {
-                                  Navigator.of(context).push(PageTransition(
-                                      child: GuestMode(),
-                                      type: PageTransitionType.fade));
-                                }),
-                        ]))
+                                ),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () async {
+                                    Navigator.of(context).push(PageTransition(
+                                        child: GuestMode(),
+                                        type: PageTransitionType.fade));
+                                  }),
+                          ])),
+                        )
                       ],
                     ),
                   ],

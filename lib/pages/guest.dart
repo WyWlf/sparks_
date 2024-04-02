@@ -101,7 +101,7 @@ class _GuestModeState extends State<GuestMode> {
                                       value: usedPercent,
                                       title: 'Used',
                                       showTitle: true,
-                                      color: Colors.orange),
+                                      color: Colors.red),
                                 ]),
                               ),
                             ),

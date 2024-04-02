@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sparks/main.dart';
+import 'package:sparks/pages/feedbackform.dart';
 
 import 'package:sparks/widgets/pages.dart';
 
@@ -38,6 +39,7 @@ class _SettingsState extends State<Settings> {
           body: ListView(
             padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
             children: [
+              //Account Settings
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
@@ -147,6 +149,25 @@ class _SettingsState extends State<Settings> {
                     ],
                   ),
                 ),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                ),
+                child: ListTile(
+                  leading: Icon(Icons.chat),
+                  title: Text('Feedback Form'),
+                  trailing: IconButton(
+                    icon: Icon(Icons.arrow_forward_ios),
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (context) => FeedbackForm(),
+                      ));
+                    },
+                  ),
+                ),
+              ),
+
+              //log out
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
