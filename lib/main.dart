@@ -3,6 +3,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:sparks/pages/dashboard.dart';
 import 'package:sparks/pages/guest.dart';
 import 'package:sparks/pages/login.dart';
 import 'package:sparks/pages/signup.dart';
@@ -80,7 +81,7 @@ class HomePage extends StatelessWidget {
                             Navigator.push(
                               context,
                               PageTransition(
-                                  child: LoginPage(),
+                                  child: Dashboard(),
                                   type: PageTransitionType.fade),
                             );
                           },

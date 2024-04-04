@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
@@ -17,13 +18,16 @@ class SignPage extends StatefulWidget {
 }
 
 class RegisterModel {
-  String? nickname;
-  String? plate;
-  String? email;
-  String? password;
+  final String nickname;
+  final String plate;
+  final String email;
+  final String password;
 
-  RegisterModel({this.nickname, this.plate, this.email, this.password});
-
+  RegisterModel(
+      {required this.nickname,
+      required this.plate,
+      required this.email,
+      required this.password});
   factory RegisterModel.fromJson(Map<String, dynamic> json) {
     return RegisterModel(
       nickname: json['nickname'],
@@ -33,32 +37,86 @@ class RegisterModel {
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'nickname': nickname,
-      'plate': plate,
-      'email': email,
-      'password': password,
-    };
-  }
+  // Map<String, dynamic> toJson() {
+  //   return {
+  //     'nickname': nickname,
+  //     'plate': plate,
+  //     'email': email,
+  //     'password': password,
+  //   };
+  // }
 }
 
 void main() async {}
 
 class _SignPageState extends State<SignPage> {
   final _formfield = GlobalKey<FormState>();
-  final nickname = TextEditingController();
-  final plate = TextEditingController();
-  final email = TextEditingController();
-  final newpass = TextEditingController();
-  final confirmpass = TextEditingController();
+  // final nickname = TextEditingController();
+  // final plate = TextEditingController();
+  // final email = TextEditingController();
+  // final newpass = TextEditingController();
+  // final confirmpass = TextEditingController();
+  TextEditingController nickname = TextEditingController();
+  TextEditingController plate = TextEditingController();
+  TextEditingController email = TextEditingController();
+  TextEditingController newpass = TextEditingController();
+  TextEditingController confirmpass = TextEditingController();
+
   bool passToggle = true;
-  late RegisterModel _registerModel;
+
+  Future<void> _registerUser() async {
+    var json = jsonEncode({
+      'nickname': nickname.text,
+      'plate': plate.text,
+      'email': email.text,
+      'password': newpass.text,
+    });
+    final uri =
+        Uri.parse('https://young-cloud-49021.pktriot.net/api/addClientUsers');
+    final body = json;
+    final headers = {'Content-Type': 'application/json'};
+
+    try {
+      final response = await http.post(uri, body: body, headers: headers);
+
+      if (response.statusCode == 200) {
+        // Registration successful
+        // Clear registration form fields
+
+        nickname.clear();
+        plate.clear();
+        email.clear();
+        newpass.clear();
+        confirmpass.clear();
+
+        // Navigate to the Dashboard screen, replacing the current screen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const Dashboard(),
+          ),
+        );
+      } else {
+        // Handle network errors or exceptions
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('An error occurred. ${response.statusCode}'),
+          ),
+        );
+      }
+    } catch (error) {
+      // Handle network errors or exceptions
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'An error occurred. Please check your connection and try again.'),
+        ),
+      );
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    _registerModel = RegisterModel();
   }
 
   @override
@@ -285,41 +343,5 @@ class _SignPageState extends State<SignPage> {
         ),
       ],
     );
-  }
-
-  void _registerUser() async {
-    final uri =
-        Uri.parse('https://young-cloud-49021.pktriot.net/api/addClientUsers');
-    final body = jsonEncode(_registerModel.toJson());
-    final headers = {'Content-Type': 'application/json'};
-
-    try {
-      final response = await http.post(uri, body: body, headers: headers);
-
-      if (response.statusCode == 201) {
-        // Registration successful
-        // Clear registration form fields
-        nickname.clear();
-        plate.clear();
-        email.clear();
-        newpass.clear();
-        confirmpass.clear();
-
-        // Navigate to the Dashboard screen, replacing the current screen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const Dashboard(),
-          ),
-        );
-      }
-    } catch (error) {
-      // Handle network errors or exceptions
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              'An error occurred. Please check your connection and try again.'),
-        ),
-      );
-    }
   }
 }
