@@ -1,7 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:sparks/main.dart';
 import 'package:sparks/pages/feedbackform.dart';
-
+import 'package:http/http.dart' as http;
 import 'package:sparks/widgets/pages.dart';
 
 class Settings extends StatefulWidget {
@@ -14,21 +16,52 @@ class Settings extends StatefulWidget {
 class _SettingsState extends State<Settings> {
   bool _showForm = false;
   bool _passChange = false;
+  TextEditingController nickname = TextEditingController();
+  TextEditingController plate = TextEditingController();
+  TextEditingController email = TextEditingController();
+  TextEditingController newPass = TextEditingController();
+  TextEditingController confPass = TextEditingController();
+  TextEditingController currPass = TextEditingController();
+  Future<void> getUserInfo() async {
+    final uri = Uri.parse('https://young-cloud-49021.pktriot.net/api/getUsers');
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({'search': 'haroldtest', 'onlyUsers': true});
+    try {
+      var client = http.Client();
+      final response = await client.post(uri, body: body, headers: headers);
+      if (response.statusCode == 200) {
+        var json = response.body;
+        var parseJson = jsonDecode(json);
+        nickname.text = parseJson['row'][0]['user_id'];
+        plate.text = parseJson['row'][0]['plate_number'];
+        email.text = parseJson['row'][0]['email'];
+      }
+    } catch (error) {
+      // Handle network errors or exceptions
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'An error occurred. Please check your connection and try again.'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        PagesBackground(),
+        const PagesBackground(),
         Scaffold(
-          backgroundColor: Color.fromARGB(0, 255, 255, 255),
+          backgroundColor: const Color.fromARGB(0, 255, 255, 255),
           appBar: PreferredSize(
-            preferredSize: Size.fromHeight(130),
+            preferredSize: const Size.fromHeight(130),
             child: AppBar(
-              iconTheme: IconThemeData(color: Colors.white),
+              iconTheme: const IconThemeData(color: Colors.white),
               backgroundColor: Colors.transparent,
               elevation: 0,
               toolbarHeight: 80,
-              title: Text(
+              title: const Text(
                 'Settings',
                 style: TextStyle(
                   fontSize: 25,
@@ -38,11 +71,11 @@ class _SettingsState extends State<Settings> {
             ),
           ),
           body: ListView(
-            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
             children: [
               //Account Settings
               Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20),
@@ -50,13 +83,14 @@ class _SettingsState extends State<Settings> {
                   color: Colors.white,
                 ),
                 child: ListTile(
-                  leading: Icon(Icons.account_circle),
-                  title: Text('Account Settings'),
+                  leading: const Icon(Icons.account_circle),
+                  title: const Text('Account Settings'),
                   trailing: IconButton(
-                    icon: Icon(Icons.edit),
+                    icon: const Icon(Icons.edit),
                     onPressed: () {
                       setState(() {
                         _showForm = !_showForm;
+                        getUserInfo();
                       });
                     },
                   ),
@@ -64,54 +98,70 @@ class _SettingsState extends State<Settings> {
               ),
               if (_showForm)
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                  decoration: BoxDecoration(color: Colors.white),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                  decoration: const BoxDecoration(color: Colors.white),
                   child: Column(
                     children: [
                       TextFormField(
-                        decoration: InputDecoration(
-                          labelText: 'Nickname',
+                        controller: nickname,
+                        decoration: const InputDecoration(
+                          labelText: 'Nickname/Username',
                         ),
                       ),
                       TextFormField(
-                        decoration: InputDecoration(
+                        controller: plate,
+                        decoration: const InputDecoration(
                           labelText: 'Plate Number',
                         ),
                       ),
                       TextFormField(
-                        decoration: InputDecoration(
+                        controller: email,
+                        decoration: const InputDecoration(
                           labelText: 'Email',
                         ),
                       ),
-                      Container(
-                        child: TextFormField(
-                          decoration: InputDecoration(
-                            labelText: 'Current Password',
-                            suffixIcon: InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _passChange = !_passChange;
-                                });
-                              },
-                              child: Icon(Icons.edit),
-                            ),
+                      TextFormField(
+                        obscureText: true,
+                        controller: currPass,
+                        decoration: InputDecoration(
+                          labelText: 'Current Password',
+                          suffixIcon: InkWell(
+                            onTap: () {
+                              setState(() {
+                                _passChange = !_passChange;
+                              });
+                            },
+                            child: const Icon(Icons.edit),
                           ),
-                          obscureText: true,
                         ),
                       ),
                       if (_passChange)
                         Column(
                           children: [
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 15),
-                              decoration: BoxDecoration(color: Colors.white),
+                              decoration:
+                                  const BoxDecoration(color: Colors.white),
                               child: TextFormField(
-                                decoration: InputDecoration(
+                                obscureText: true,
+                                controller: newPass,
+                                decoration: const InputDecoration(
                                   labelText: 'New Password',
                                 ),
                               ),
                             ),
-                            SizedBox(height: 10),
+                            Container(
+                              decoration:
+                                  const BoxDecoration(color: Colors.white),
+                              child: TextFormField(
+                                obscureText: true,
+                                controller: confPass,
+                                decoration: const InputDecoration(
+                                  labelText: 'Confirm Password',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
                             ElevatedButton(
                               onPressed: () {
                                 // Save changes and hide the form
@@ -119,17 +169,17 @@ class _SettingsState extends State<Settings> {
                                   _passChange = false;
                                 });
                               },
-                              style: ButtonStyle(
+                              style: const ButtonStyle(
                                 elevation: MaterialStatePropertyAll(8),
                                 backgroundColor:
                                     MaterialStatePropertyAll(Colors.white),
                               ),
-                              child: Text('Save New Password',
+                              child: const Text('Save New Password',
                                   style: TextStyle(color: Colors.black)),
                             ),
                           ],
                         ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () {
                           // Save changes and hide the form
@@ -137,12 +187,12 @@ class _SettingsState extends State<Settings> {
                             _showForm = false;
                           });
                         },
-                        style: ButtonStyle(
+                        style: const ButtonStyle(
                           elevation: MaterialStatePropertyAll(8),
                           backgroundColor:
                               MaterialStatePropertyAll(Colors.green),
                         ),
-                        child: Text(
+                        child: const Text(
                           'Save Changes',
                           style: TextStyle(color: Colors.white),
                         ),
@@ -151,14 +201,14 @@ class _SettingsState extends State<Settings> {
                   ),
                 ),
               Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
                 ),
                 child: ListTile(
-                  leading: Icon(Icons.chat),
-                  title: Text('Feedback Form'),
+                  leading: const Icon(Icons.chat),
+                  title: const Text('Feedback Form'),
                   trailing: IconButton(
-                    icon: Icon(Icons.arrow_forward_ios),
+                    icon: const Icon(Icons.arrow_forward_ios),
                     onPressed: () {
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (context) => FeedbackForm(),
@@ -170,14 +220,14 @@ class _SettingsState extends State<Settings> {
 
               //log out
               Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
                 ),
                 child: ListTile(
-                  leading: Icon(Icons.exit_to_app),
-                  title: Text('Log Out'),
+                  leading: const Icon(Icons.exit_to_app),
+                  title: const Text('Log Out'),
                   trailing: IconButton(
-                    icon: Icon(Icons.arrow_forward_ios),
+                    icon: const Icon(Icons.arrow_forward_ios),
                     onPressed: () {
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (context) => const MyApp(),

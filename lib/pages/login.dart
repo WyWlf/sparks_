@@ -25,29 +25,17 @@ class LoginPage extends StatefulWidget {
 class LoginModel {
   final String plate;
   final String password;
-  final String token;
+  final bool onlyUser;
 
   LoginModel(
-      {required this.plate, required this.password, required this.token});
+      {required this.plate, required this.password, required this.onlyUser});
 
   Map<String, dynamic> toJson() {
     return {
-      'email': plate,
+      'username': plate,
       'password': password,
-      'token ': token,
+      'onlyUser' : true
     };
-  }
-}
-
-class ApiResponse {
-  final String token;
-
-  ApiResponse({required this.token});
-
-  factory ApiResponse.fromJson(Map<String, dynamic> json) {
-    return ApiResponse(
-      token: json['token'],
-    );
   }
 }
 
@@ -98,13 +86,13 @@ class _LoginPageState extends State<LoginPage> {
                             keyboardType: TextInputType.emailAddress,
                             controller: plate,
                             decoration: InputDecoration(
-                              hintText: "Enter plate number",
+                              hintText: "Enter username",
                               prefixIcon: Icon(Icons.tag),
                             ),
                             //validate platenumber to database
                             validator: (value) {
                               if (value!.isEmpty) {
-                                return "Enter Plate Number";
+                                return "Enter username";
                               }
 
                               return null;
@@ -272,51 +260,63 @@ class _LoginPageState extends State<LoginPage> {
     final loginModel = LoginModel(
       plate: plate.text,
       password: password.text,
-      token: '',
+      onlyUser: true
     );
     final uri = Uri.parse('https://young-cloud-49021.pktriot.net/api/login');
     final body = jsonEncode(loginModel.toJson());
     final headers = {'Content-Type': 'application/json'};
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => Center(
-        child: LoadingAnimationWidget.halfTriangleDot(
-            color: Colors.green, size: 40),
-      ),
-    );
     try {
       final response = await http.post(uri, body: body, headers: headers);
+      var json = response.body;
+      var parseJson = jsonDecode(json);
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
+      dynamic code = parseJson['code'];
+      dynamic status = parseJson['status'];
+      print(code);
+      print(status);
+      if (status == 200 && code == 1) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) => Center(
+            child: LoadingAnimationWidget.halfTriangleDot(
+                color: Colors.green, size: 40),
+          ),
+        );
+        final Map<String, dynamic> data = parseJson['token'];
         final String token = data['token'];
 
         // Store the token securely (implement secure storage)
-// Store the token securely
-        final storage = new FlutterSecureStorage();
+        // Store the token securely
+        final storage = FlutterSecureStorage();
         await storage.write(key: 'token', value: token);
         // Navigate to Dashboard and potentially pass the token
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => Dashboard(token: loginModel.token),
+            builder: (context) => Dashboard(token: response),
           ),
         );
-      } else if (response.statusCode == 401) {
+      } else if (status == 200 && code == 2) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Invalid email or password.'),
+            content: Text('Invalid username or password.'),
+          ),
+        );
+      } else if (status == 401) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Account not found.'),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Login failed. Error code: ${response.statusCode}'),
+            content: Text('Login failed. ${response.statusCode}'),
           ),
         );
       }
     } catch (error) {
+      print(error);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

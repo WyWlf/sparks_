@@ -32,9 +32,9 @@ class _DashboardState extends State<Dashboard> {
     final formattedTime = format.format(time);
     final formattedDate = formatter.format(now);
 
-    final available = 20;
-    final used = 30;
-    final total = available + used;
+    int available = 20;
+    int used = 30;
+    int total = available + used;
 
 // Calculate percentages for pie chart slices
     final availablePercent = (available / total) * 100;
