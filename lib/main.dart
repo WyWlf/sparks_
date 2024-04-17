@@ -81,7 +81,9 @@ class HomePage extends StatelessWidget {
                             Navigator.push(
                               context,
                               PageTransition(
-                                  child: Dashboard(),
+                                  child: const Dashboard(
+                                    token: '',
+                                  ),
                                   type: PageTransitionType.fade),
                             );
                           },

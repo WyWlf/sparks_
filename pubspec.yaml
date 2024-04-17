@@ -59,6 +59,11 @@ dependencies:
 #convert_img
   image: ^4.1.7
 
+#token
+  flutter_secure_storage: ^9.0.0
+
+#loading
+  loading_animation_widget: ^1.2.1
   
 
 dev_dependencies:

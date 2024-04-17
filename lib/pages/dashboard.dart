@@ -10,9 +10,10 @@ import 'package:sparks/pages/transac_history.dart';
 import 'package:sparks/widgets/pagesbg.dart';
 import 'package:sparks/widgets/pages.dart';
 import 'package:intl/intl.dart';
+import 'package:sparks/widgets/pallete.dart';
 
 class Dashboard extends StatefulWidget {
-  const Dashboard({super.key});
+  const Dashboard({super.key, required String token});
 
   @override
   State<Dashboard> createState() => _DashboardState();
@@ -52,6 +53,7 @@ class _DashboardState extends State<Dashboard> {
               iconTheme: IconThemeData(color: Colors.white),
               backgroundColor: Colors.transparent,
               elevation: 0,
+              toolbarHeight: 80,
               title: Text(
                 'SPARKS',
                 style: TextStyle(
@@ -107,7 +109,9 @@ class _DashboardState extends State<Dashboard> {
                     title: Text('D A S H B O A R D'),
                     onTap: () {
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) => const Dashboard(),
+                        builder: (context) => const Dashboard(
+                          token: '',
+                        ),
                       ));
                     },
                   ),
@@ -181,15 +185,11 @@ class _DashboardState extends State<Dashboard> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Text(
-                        'Time Started: ',
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      Text('Time Started: ', style: white),
                       SizedBox(
                         width: 30,
                       ),
-                      Text('Total Hours:',
-                          style: TextStyle(color: Colors.white)),
+                      Text('Total Hours:', style: white),
                     ],
                   ),
                 ),
@@ -200,15 +200,11 @@ class _DashboardState extends State<Dashboard> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Text('$formattedTime',
-                          style: TextStyle(
-                              color: Color.fromARGB(255, 67, 229, 4))),
+                      Text('$formattedTime', style: green),
                       SizedBox(
                         width: 160,
                       ),
-                      Text(DateFormat.HOUR24_MINUTE_SECOND,
-                          style: TextStyle(
-                              color: Color.fromARGB(255, 67, 229, 4))),
+                      Text(DateFormat.HOUR24_MINUTE_SECOND, style: green),
                     ],
                   ),
                 ),
@@ -216,12 +212,8 @@ class _DashboardState extends State<Dashboard> {
                   top: 140,
                   child: Column(
                     children: [
-                      Text('Total Amount: ',
-                          style: TextStyle(color: Colors.white)),
-                      Text('300.00',
-                          style: TextStyle(
-                              color: Color.fromARGB(255, 67, 229, 4),
-                              fontSize: 25))
+                      Text('Total Amount: ', style: white),
+                      Text('300.00', style: amount)
                     ],
                   ),
                 ),
@@ -229,7 +221,7 @@ class _DashboardState extends State<Dashboard> {
                   alignment: Alignment.topCenter,
                   padding: EdgeInsets.all(5),
                   height: 40,
-                  width: 150,
+                  width: MediaQuery.of(context).size.width * 0.5,
                   color: Colors.white,
                   child: Text(
                     'PAY TO PARK',
@@ -269,10 +261,7 @@ class _DashboardState extends State<Dashboard> {
                     text: TextSpan(
                       children: <TextSpan>[
                         TextSpan(text: 'Date: '),
-                        TextSpan(
-                            text: formattedDate,
-                            style: TextStyle(
-                                color: Color.fromARGB(255, 67, 229, 4)))
+                        TextSpan(text: formattedDate, style: green)
                       ],
                     ),
                   ),
@@ -285,15 +274,12 @@ class _DashboardState extends State<Dashboard> {
             Container(
               padding: EdgeInsets.all(10),
               height: 50,
-              width: 500,
+              width: MediaQuery.of(context).size.width,
               color: Color.fromARGB(255, 51, 51, 51),
               child: Text(
                 'AVAILABLE PARKING SPACE',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white),
+                style: AvPark,
               ),
             ),
 
@@ -334,19 +320,10 @@ class _DashboardState extends State<Dashboard> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Text(
-                    'Total Available Parking Space: $available ($availablePercent%)',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    'Used Parking Space : $used ($usedPercent%)',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                      'Total Available Parking Space: $available ($availablePercent%)',
+                      style: sums),
+                  Text('Used Parking Space : $used ($usedPercent%)',
+                      style: sums),
                   SizedBox(
                     height: 20,
                   ),
@@ -365,7 +342,7 @@ class _DashboardState extends State<Dashboard> {
                     },
                     child: Text(
                       'View Parking Map',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                      style: TextStyle(color: Colors.white, fontSize: 15),
                     ),
                   )
                 ],

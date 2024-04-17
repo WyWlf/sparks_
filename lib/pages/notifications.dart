@@ -48,6 +48,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               iconTheme: IconThemeData(color: Colors.white),
               backgroundColor: Colors.transparent,
               elevation: 0,
+              toolbarHeight: 80,
               title: Text(
                 'Notifications',
                 style: TextStyle(
@@ -98,7 +99,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           });
                           Navigator.of(context)
                               .pushReplacement(MaterialPageRoute(
-                            builder: (context) => const Dashboard(),
+                            builder: (context) => const Dashboard(
+                              token: '',
+                            ),
                           ));
                         }),
                   ),

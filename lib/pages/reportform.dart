@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:sparks/pages/reporthistory.dart';
 import 'package:sparks/widgets/pages.dart';
 import 'package:http/http.dart' as http;
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class ReportPage extends StatefulWidget {
   const ReportPage({super.key});
@@ -18,63 +19,124 @@ class ReportPage extends StatefulWidget {
   State<ReportPage> createState() => _ReportPageState();
 }
 
+class EncodedImages {
+  EncodedImages({required this.index, required this.imgData});
+
+  int index;
+  String imgData;
+
+  EncodedImages getObj() {
+    return EncodedImages(index: index, imgData: imgData);
+  }
+}
+
 class _ReportPageState extends State<ReportPage> {
   TextEditingController plate = TextEditingController();
   TextEditingController description = TextEditingController();
   String _selectedType = 'damaged';
   bool _isFormVisible = false;
-  List<File?> _selectedImages = [];
-
-  //unused mani
-  Widget _buildImageGrid() {
-    return GridView.count(
-      crossAxisCount: 3,
-      children: _selectedImages.map((image) {
-        return Image.file(
-          image!,
-          fit: BoxFit.cover,
-        );
-      }).toList(),
-    );
-  }
+  List<File> _selectedImages = [];
 
   Future<List<File>> _pickImages() async {
+    if (_selectedImages.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text('Please wait for the current image selection to complete.'),
+        ),
+      );
+      return _selectedImages;
+    }
     final imagePicker = ImagePicker();
     final List<XFile> images = await imagePicker.pickMultiImage();
-    return images.map((e) => File(e.path)).toList() ?? [];
-  }
 
-  Future _captureImages() async {
-    final imagePicker = ImagePicker();
-    List<File> images = [];
-    for (int i = 0; i < 5; i++) {
-      final returnedImage =
-          await imagePicker.pickImage(source: ImageSource.camera);
-      if (returnedImage != null) {
-        images.add(File(returnedImage.path));
+    if (images == null) {
+      return _selectedImages;
+    }
+    List<File> selectedImages = [];
+    int totalSize = 0;
+
+    for (var image in images) {
+      File file = File(image.path);
+      int imageSize = await file.length();
+      if (totalSize + imageSize <= 10 * 1024 * 1024) {
+        selectedImages.add(file);
+        totalSize += imageSize;
       } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Image size exceeds 5MB limit.'),
+          ),
+        );
         break;
       }
     }
+
     setState(() {
-      _selectedImages = images;
+      _selectedImages = selectedImages;
     });
+
+    return _selectedImages;
   }
 
   Future<void> _submitForm() async {
+    var localObj = [];
+    for (var i = 0; i < _selectedImages.length; i++) {
+      try {
+        List<int> imageBytes = await _selectedImages[i].readAsBytes();
+        String base64image = base64Encode(imageBytes);
+
+        // Upload image to ImgBB API
+        var url = Uri.parse('https://api.imgbb.com/1/upload');
+        var headers = {'Content-Type': 'multipart/form-data'};
+        var request = http.MultipartRequest('POST', url);
+        request.fields['key'] = '9a1831cc0674af49d4d08b72d378aaa8';
+        request.files.add(http.MultipartFile.fromBytes(
+          'image',
+          imageBytes,
+        ));
+
+        var streamedResponse = await request.send();
+        final response = await http.Response.fromStream(streamedResponse);
+
+        if (response.statusCode == 200) {
+          var data = jsonDecode(response.body);
+          if (data != null &&
+              data['data'] != null &&
+              data['data']['url'] != null) {
+            var imageUrl = data['data']['url'];
+            localObj.add({'image': imageUrl});
+          } else {
+            // Handle ImgBB upload error
+            print('Error uploading image to ImgBB: $data');
+          }
+        } else {
+          // Handle error from ImgBB upload request
+          print('Error uploading image: Status code ${response.statusCode}');
+        }
+      } catch (error) {
+        // Handle errors reading image bytes or uploading to ImgBB
+        print('Error uploading image: $error');
+      }
+    }
+//data to be posted
     var json = jsonEncode({
-      'files': _selectedImages,
       'plate': plate.text,
       'issue': _selectedType,
-      'description': description.text
+      'description': description.text,
+      'files': localObj,
     });
+
+    print('Test DATA POST: $json');
+
     final uri =
         Uri.parse('https://young-cloud-49021.pktriot.net/api/addReportForm');
     final body = json;
     final headers = {'Content-Type': 'application/json'};
 
     try {
-      final response = await http.post(uri, body: body, headers: headers);
+      var client = http.Client();
+      final response = await client.post(uri, body: body, headers: headers);
 
       if (response.statusCode == 200) {
         // Registration successful
@@ -251,6 +313,7 @@ class _ReportPageState extends State<ReportPage> {
 
                               //concerns
                               TextField(
+                                controller: description,
                                 decoration: InputDecoration(
                                   labelText:
                                       'Specify the issues found in the parking lot',
@@ -296,20 +359,22 @@ class _ReportPageState extends State<ReportPage> {
                                                 ),
 
                                                 //Open Camera
-                                                ListTile(
-                                                  leading: Icon(Icons.camera),
-                                                  title: Text('Open Camera'),
-                                                  onTap: () async {
-                                                    final images =
-                                                        await _captureImages();
-                                                    setState(() {
-                                                      if (images != null) {
-                                                        _selectedImages =
-                                                            images;
-                                                      }
-                                                    });
-                                                  },
-                                                ),
+                                                // ListTile(
+                                                //   leading: Icon(Icons.camera),
+                                                //   title: Text('Open Camera'),
+                                                //   onTap: () async {
+                                                //     final images =
+                                                //         await _captureImages();
+                                                //     setState(() {
+                                                //       if (images != null) {
+                                                //         _selectedImages =
+                                                //             images;
+                                                //         _displayedImage = images[
+                                                //             0]; // Display the first captured image
+                                                //       }
+                                                //     });
+                                                //   },
+                                                // ),
                                               ],
                                             );
                                           },
@@ -321,13 +386,39 @@ class _ReportPageState extends State<ReportPage> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  Text(
-                                      'Total Images: ${_selectedImages.length}'),
-                                  Container(
-                                      height: 200,
-                                      child: _selectedImages.isNotEmpty
-                                          ? Image.file(_selectedImages[0]!)
-                                          : Text("No Selected Images")),
+                                  Wrap(
+                                    // Wrap the images for row-based layout
+                                    spacing:
+                                        10, // Adjust spacing between images
+                                    runSpacing:
+                                        10, // Adjust spacing between rows
+                                    children: _selectedImages.map((image) {
+                                      return Stack(
+                                        children: [
+                                          Container(
+                                            // Use Box for aspect ratio preservation
+                                            child: Image.file(image),
+                                            height: 100,
+                                          ),
+                                          Positioned(
+                                            top: 0,
+                                            right: 0,
+                                            child: IconButton(
+                                              icon: Icon(
+                                                Icons.close,
+                                                color: Colors.white,
+                                              ),
+                                              onPressed: () {
+                                                setState(() {
+                                                  _selectedImages.remove(image);
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  ),
                                   Divider(color: Colors.black),
                                 ],
                               ),
@@ -335,6 +426,7 @@ class _ReportPageState extends State<ReportPage> {
                               SizedBox(
                                 height: 10,
                               ),
+
                               Padding(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 20),
@@ -353,6 +445,10 @@ class _ReportPageState extends State<ReportPage> {
                                       onPressed: () {
                                         setState(() {
                                           _isFormVisible = false;
+                                          plate.clear();
+                                          description.clear();
+                                          _selectedType = 'damaged';
+                                          _selectedImages = [];
                                         });
                                       },
                                       child: Text('Cancel'),
@@ -370,8 +466,62 @@ class _ReportPageState extends State<ReportPage> {
                                         borderRadius: BorderRadius.circular(50),
                                       ),
                                       elevation: 10,
-                                      onPressed: () {
-                                        _submitForm();
+                                      onPressed: () async {
+                                        if (description.text.isEmpty) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                                  content: Text(
+                                                      'Please enter a description')));
+                                          return;
+                                        }
+
+                                        if (plate.text.isEmpty ||
+                                            !RegExp(r"^[a-z0-9]+$")
+                                                .hasMatch(plate.text)) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                            content: Text(
+                                                'Invalid plate number! Please enter a valid alphanumeric plate number.'),
+                                            backgroundColor: Colors.red,
+                                            duration:
+                                                const Duration(seconds: 3),
+                                          ));
+                                          return;
+                                        }
+
+                                        // Show loading indicator
+                                        showDialog(
+                                          context: context,
+                                          barrierDismissible: false,
+                                          builder: (BuildContext context) =>
+                                              Center(
+                                            child: LoadingAnimationWidget
+                                                .halfTriangleDot(
+                                                    color: Colors.green,
+                                                    size: 40),
+                                          ),
+                                        );
+
+                                        try {
+                                          // Call your API upload function with appropriate error handling
+                                          final response = await _submitForm();
+
+                                          // Handle successful upload
+                                          Navigator.pop(
+                                              context); // Hide loading indicator
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                                  content: Text(
+                                                      'Form uploaded successfully!')));
+                                        } catch (error) {
+                                          // Handle upload error
+                                          Navigator.pop(
+                                              context); // Hide loading indicator
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                                  content: Text(
+                                                      'Error uploading form: $error')));
+                                        }
                                       },
                                       child: Text('Confirm'),
                                     ),

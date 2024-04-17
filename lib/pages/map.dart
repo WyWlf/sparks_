@@ -37,6 +37,7 @@ class _MapPageState extends State<MapPage> {
               iconTheme: IconThemeData(color: Colors.white),
               backgroundColor: Colors.transparent,
               elevation: 0,
+              toolbarHeight: 80,
               title: Text(
                 'Parking Map',
                 style: TextStyle(

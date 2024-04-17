@@ -6,13 +6,16 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sparks/api/local_auth_service.dart';
 import 'package:sparks/pages/dashboard.dart';
 import 'package:sparks/pages/signup.dart';
+import 'package:sparks/widgets/decoration.dart';
 import 'package:sparks/widgets/widget.dart';
 import '../widgets/pallete.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -22,13 +25,16 @@ class LoginPage extends StatefulWidget {
 class LoginModel {
   final String plate;
   final String password;
+  final String token;
 
-  LoginModel({required this.plate, required this.password});
+  LoginModel(
+      {required this.plate, required this.password, required this.token});
 
   Map<String, dynamic> toJson() {
     return {
       'email': plate,
       'password': password,
+      'token ': token,
     };
   }
 }
@@ -47,11 +53,10 @@ class ApiResponse {
 
 class _LoginPageState extends State<LoginPage> {
   final _formfield = GlobalKey<FormState>();
-  final plate = TextEditingController();
-  final pass = TextEditingController();
+  final TextEditingController plate = TextEditingController();
+  final TextEditingController password = TextEditingController();
   bool passToggle = true;
   bool authenticated = false;
-  late LoginModel _loginModel;
 
   @override
   Widget build(BuildContext context) {
@@ -59,208 +64,200 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         BackgroundSign(),
         Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            toolbarHeight: 80,
+          ),
           backgroundColor: Colors.transparent,
           body: SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 60),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
               child: Form(
                 key: _formfield,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(height: 180),
-                    Text(
-                      'L O G I N',
-                      style: logo,
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Text(
-                      'Login to your account',
-                      style:
-                          TextStyle(fontSize: 15, fontStyle: FontStyle.italic),
-                    ),
-                    //space
-                    SizedBox(
-                      height: 30,
-                    ),
+                    Container(
+                      width: MediaQuery.of(context).size.width,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                      decoration: reg,
+                      child: Column(
+                        children: [
+                          SizedBox(
+                              height: 105,
+                              child: Image.asset("images/sparkslogo.png")),
+                          Text('Login', style: logo),
+                          Text('Login to your account', style: def),
 
-                    //plate number
-                    TextFormField(
-                      keyboardType: TextInputType.emailAddress,
-                      controller: plate,
-                      decoration: InputDecoration(
-                        label: const Text('Plate number'),
-                        hintText: "Enter your car's plate number",
-                        prefixIcon: Icon(Icons.tag),
-                      ),
-                      //validate platenumber to database
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return "Enter Plate Number";
-                        }
+                          //plate number
+                          TextFormField(
+                            style: def,
+                            keyboardType: TextInputType.emailAddress,
+                            controller: plate,
+                            decoration: InputDecoration(
+                              hintText: "Enter plate number",
+                              prefixIcon: Icon(Icons.tag),
+                            ),
+                            //validate platenumber to database
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Enter Plate Number";
+                              }
 
-                        return null;
-                      },
-                    ),
-                    //space
-                    SizedBox(
-                      height: 5,
-                    ),
+                              return null;
+                            },
+                          ),
+                          //space
+                          SizedBox(
+                            height: 5,
+                          ),
 
-                    //password
-                    TextFormField(
-                      keyboardType: TextInputType.visiblePassword,
-                      controller: pass,
-                      obscureText: passToggle,
-                      decoration: InputDecoration(
-                        label: const Text('Password'),
-                        hintText: "Enter your password!",
-                        prefixIcon: Icon(Icons.password),
-                        suffixIcon: InkWell(
-                          onTap: () {
-                            setState(() {
-                              passToggle = !passToggle;
-                            });
-                          },
-                          child: Icon(passToggle
-                              ? Icons.visibility
-                              : Icons.visibility_off),
-                        ),
-                      ),
+                          //password
+                          TextFormField(
+                            keyboardType: TextInputType.visiblePassword,
+                            style: def,
+                            controller: password,
+                            obscureText: passToggle,
+                            decoration: InputDecoration(
+                              hintText: "Enter password!",
+                              prefixIcon: Icon(Icons.password),
+                              suffixIcon: InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    passToggle = !passToggle;
+                                  });
+                                },
+                                child: Icon(passToggle
+                                    ? Icons.visibility
+                                    : Icons.visibility_off),
+                              ),
+                            ),
 
-                      //validate password format
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return "Enter Password";
-                        }
-                        if (pass.text.length < 6) {
-                          return 'Password must be at least 8 characters long';
-                        }
-                        if (!value.contains(RegExp(r'[A-Z]'))) {
-                          return 'Password must contain at least one uppercase letter';
-                        }
-                        if (!value.contains(RegExp(r'[a-z]'))) {
-                          return 'Password must contain at least one lowercase letter';
-                        }
-                        if (!value.contains(RegExp(r'[0-9]'))) {
-                          return 'Password must contain at least one number';
-                        }
-                        return null;
-                      },
-                    ),
+                            //validate password format
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Enter Password";
+                              }
 
-                    //space
-                    SizedBox(
-                      height: 20,
-                    ),
+                              if (password.text.length < 6) {
+                                return 'Password must be at least 8 characters long';
+                              }
+                              if (!value.contains(RegExp(r'[A-Z]'))) {
+                                return 'Password must contain at least one uppercase letter';
+                              }
+                              if (!value.contains(RegExp(r'[a-z]'))) {
+                                return 'Password must contain at least one lowercase letter';
+                              }
+                              if (!value.contains(RegExp(r'[0-9]'))) {
+                                return 'Password must contain at least one number';
+                              }
+                              return null;
+                            },
+                          ),
 
-                    //LOGIN BUTTON
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_formfield.currentState!.validate()) {
-                          _loginUser();
-                        }
-                      },
-                      child: Center(
-                        child: Container(
-                          padding: EdgeInsets.all(10),
-                          margin: EdgeInsets.only(bottom: 10),
-                          width: 150,
-                          decoration: BoxDecoration(
-                            color: Color.fromARGB(255, 255, 255, 255),
-                            borderRadius: BorderRadius.circular(50),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey,
-                                offset: Offset(0.0, 7), //(x,y)
-                                blurRadius: 6.0,
+                          //space
+                          SizedBox(
+                            height: 20,
+                          ),
+
+                          //LOGIN BUTTON
+
+                          ElevatedButton(
+                              style: whiteButton,
+                              onPressed: () {
+                                if (_formfield.currentState!.validate()) {
+                                  _loginUser();
+
+                                  // call the _registerUser method
+                                }
+                              },
+                              child: Padding(
+                                  padding: EdgeInsets.all(10),
+                                  child: Text('Login', style: buttons))),
+                          SizedBox(height: 10),
+
+                          //space
+                          Row(children: <Widget>[
+                            Expanded(
+                                child: Divider(
+                              color: Colors.black54,
+                            )),
+                            Text("   OR   "),
+                            Expanded(
+                                child: Divider(
+                              color: Colors.black54,
+                            )),
+                          ]),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          //biometrics
+                          SizedBox(
+                            width: 150,
+                            height: 50,
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                final authenticate =
+                                    await LocalAuth.authenticate();
+
+                                setState(() {
+                                  authenticated = authenticate;
+                                });
+                                if (authenticated) {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => Dashboard(
+                                                token: '',
+                                              )));
+                                }
+                              },
+                              icon: Icon(Icons.fingerprint),
+                              label: Text('Biometrics'),
+                            ),
+                          ),
+                          //space
+                          SizedBox(
+                            height: 20,
+                          ),
+                          RichText(
+                              text: TextSpan(children: <TextSpan>[
+                            TextSpan(text: "Forgot Password? ", style: tspan)
+                          ])),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              RichText(
+                                text: TextSpan(children: <TextSpan>[
+                                  TextSpan(
+                                    text: "Don't have an account?  ",
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                      text: 'Sign Up',
+                                      style: tspan,
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = () async {
+                                          Navigator.of(context).push(
+                                              PageTransition(
+                                                  child: SignPage(),
+                                                  type:
+                                                      PageTransitionType.fade));
+                                        }),
+                                ]),
                               ),
                             ],
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Login',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500, fontSize: 25),
-                            ),
-                          ),
-                        ),
+                          )
+                        ],
                       ),
                     ),
-
-                    //space
-                    Row(children: <Widget>[
-                      Expanded(
-                          child: Divider(
-                        color: Colors.black54,
-                      )),
-                      Text("   OR   "),
-                      Expanded(
-                          child: Divider(
-                        color: Colors.black54,
-                      )),
-                    ]),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    //biometrics
-                    SizedBox(
-                      width: 150,
-                      height: 50,
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          final authenticate = await LocalAuth.authenticate();
-
-                          setState(() {
-                            authenticated = authenticate;
-                          });
-                          if (authenticated) {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => Dashboard()));
-                          }
-                        },
-                        icon: Icon(Icons.fingerprint),
-                        label: Text('Biometrics'),
-                      ),
-                    ),
-                    //space
-                    SizedBox(
-                      height: 30,
-                    ),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        RichText(
-                          text: TextSpan(children: <TextSpan>[
-                            TextSpan(
-                              text: "Don't have an account?  ",
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.black,
-                              ),
-                            ),
-                            TextSpan(
-                                text: 'Sign Up',
-                                style: TextStyle(
-                                    fontSize: 15,
-                                    color: Color.fromARGB(255, 0, 94, 131),
-                                    fontWeight: FontWeight.bold),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () async {
-                                    Navigator.of(context).push(PageTransition(
-                                        child: SignPage(),
-                                        type: PageTransitionType.fade));
-                                  }),
-                          ]),
-                        ),
-                      ],
-                    )
                   ],
                 ),
               ),
@@ -272,44 +269,63 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _loginUser() async {
+    final loginModel = LoginModel(
+      plate: plate.text,
+      password: password.text,
+      token: '',
+    );
     final uri = Uri.parse('https://young-cloud-49021.pktriot.net/api/login');
-    final body = jsonEncode(_loginModel.toJson());
+    final body = jsonEncode(loginModel.toJson());
     final headers = {'Content-Type': 'application/json'};
 
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => Center(
+        child: LoadingAnimationWidget.halfTriangleDot(
+            color: Colors.green, size: 40),
+      ),
+    );
     try {
       final response = await http.post(uri, body: body, headers: headers);
 
-      if (response.statusCode == 201) {
-        // Clear login form fields
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        final String token = data['token'];
 
-        plate.clear();
-        pass.clear();
-
-        // Navigate to the Dashboard screen, replacing the current screen
+        // Store the token securely (implement secure storage)
+// Store the token securely
+        final storage = new FlutterSecureStorage();
+        await storage.write(key: 'token', value: token);
+        // Navigate to Dashboard and potentially pass the token
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => const Dashboard(),
+            builder: (context) => Dashboard(token: loginModel.token),
           ),
         );
-
-        // You can use the token here for further actions, e.g., storing it for future use
-      } else {
-        // Handle other status codes if needed
+      } else if (response.statusCode == 401) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                'An error occurred. Please check your connection and try again.'),
+            content: Text('Invalid email or password.'),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login failed. Error code: ${response.statusCode}'),
           ),
         );
       }
     } catch (error) {
-      // Handle network errors or exceptions
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              'An error occurred. Please check your connection and try again.'),
+            'An error occurred. Please check your connection and try again.',
+          ),
         ),
       );
     }
   }
+
+  // ... rest of your class code (e.g., build method)
 }

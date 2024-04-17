@@ -37,6 +37,7 @@ class _GuestModeState extends State<GuestMode> {
               iconTheme: IconThemeData(color: Colors.white),
               backgroundColor: Colors.transparent,
               elevation: 0,
+              toolbarHeight: 80,
               title: Text(
                 'Guest Mode',
                 style: TextStyle(

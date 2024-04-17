@@ -27,6 +27,7 @@ class _SettingsState extends State<Settings> {
               iconTheme: IconThemeData(color: Colors.white),
               backgroundColor: Colors.transparent,
               elevation: 0,
+              toolbarHeight: 80,
               title: Text(
                 'Settings',
                 style: TextStyle(

@@ -23,6 +23,7 @@ class _ReportHistoryState extends State<ReportHistory> {
               iconTheme: IconThemeData(color: Colors.white),
               backgroundColor: Colors.transparent,
               elevation: 0,
+              toolbarHeight: 80,
               title: Text(
                 'History',
                 style: TextStyle(

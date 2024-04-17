@@ -14,10 +14,9 @@ const TextStyle titlehead = TextStyle(
   ],
 );
 //logo
-
 const TextStyle logo = TextStyle(
-  fontFamily: 'Orbitron',
-  fontSize: 30,
+  fontFamily: 'Arial',
+  fontSize: 35,
   fontWeight: FontWeight.bold,
   color: Color.fromARGB(255, 0, 0, 0),
   shadows: [
@@ -28,3 +27,24 @@ const TextStyle logo = TextStyle(
     ),
   ],
 );
+
+//default fontsize
+const TextStyle def = TextStyle(fontSize: 15, color: Colors.black);
+//buttonstyle
+const TextStyle buttons =
+    TextStyle(fontWeight: FontWeight.w500, fontSize: 20, color: Colors.black);
+//textspanstyle
+const TextStyle tspan = TextStyle(
+    fontSize: 15,
+    color: Color.fromARGB(255, 0, 94, 131),
+    fontWeight: FontWeight.bold);
+
+//dashboardpallete
+const TextStyle white = TextStyle(color: Colors.white);
+const TextStyle green = TextStyle(color: Color.fromARGB(255, 67, 229, 4));
+const TextStyle amount =
+    TextStyle(color: Color.fromARGB(255, 67, 229, 4), fontSize: 25);
+const TextStyle AvPark =
+    TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white);
+const TextStyle sums = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+const TextStyle labl = TextStyle(fontSize: 12, color: Colors.black);

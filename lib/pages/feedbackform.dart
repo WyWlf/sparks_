@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:sparks/widgets/pagesbg.dart';
+import 'package:http/http.dart' as http;
 
 class FeedbackForm extends StatefulWidget {
   @override
@@ -7,13 +10,14 @@ class FeedbackForm extends StatefulWidget {
 }
 
 class _FeedbackFormState extends State<FeedbackForm> {
-  int _rating = 3; // Initial rating value (out of 5)
+  int _rating = 2; // Initial rating value (out of 5)
   String _feedback = ""; // To store user feedback text
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        //background
         PagesBackground(),
         Scaffold(
           backgroundColor: Color.fromARGB(0, 255, 255, 255),
@@ -23,6 +27,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
               iconTheme: IconThemeData(color: Colors.white),
               backgroundColor: Colors.transparent,
               elevation: 0,
+              toolbarHeight: 80,
               title: Text(
                 'Feedback Form ',
                 style: TextStyle(
@@ -43,6 +48,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8.0),
                       ),
+                      //FORM STARTS HERE
                       child: Column(
                         children: [
                           const Text(
@@ -52,13 +58,15 @@ class _FeedbackFormState extends State<FeedbackForm> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                          //RATING
                           const Text(
-                            'How much do you love this app?',
+                            'How do you rate this app?',
                             style: TextStyle(
                               fontSize: 18.0,
                             ),
                           ),
                           const SizedBox(height: 10.0),
+                          //STARS
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: List.generate(
@@ -66,7 +74,6 @@ class _FeedbackFormState extends State<FeedbackForm> {
                           ),
                         ],
                       )),
-                  // Rating section
 
                   const SizedBox(height: 20.0),
 
@@ -83,21 +90,56 @@ class _FeedbackFormState extends State<FeedbackForm> {
                         ),
                       ),
                     ),
-                    maxLines: 5,
+                    maxLines: 6,
+                    //saving data
                     onChanged: (value) => setState(() => _feedback = value),
                   ),
                   const SizedBox(height: 20.0),
 
                   // Submit button
-                  ElevatedButton(
-                    onPressed: () {
-                      // Handle feedback submission logic here
-                      // You can send the feedback data (rating and text) to your backend
-                      print('Rating: $_rating, Feedback: $_feedback');
-                      // After submission, you can show a success message or navigate back
+                  MaterialButton(
+                    height: 40,
+                    color: Color.fromARGB(255, 18, 229, 28),
+                    splashColor: Colors.red,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    elevation: 10,
+                    onPressed: () async {
+                      // create json var to use it for calling
+                      var feedbackData = {
+                        'rating': _rating,
+                        'feedback': _feedback,
+                      };
+                      //test
+                      print('Feedback data: $feedbackData');
+
+                      // Send a POST request to the API with the feedback data
+                      var response = await http.post(
+                        Uri.parse(
+                            'https://young-cloud-49021.pktriot.net/api/addReportForm'),
+                        headers: {
+                          'Content-Type': 'application/json; charset=UTF-8',
+                        },
+                        body: jsonEncode(feedbackData),
+                      );
+
+                      // Check if the request was successful
+                      if (response.statusCode == 200) {
+                        // Show a success message or navigate back
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('Feedback submitted successfully')),
+                        );
+                      } else {
+                        // Show an error message
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error submitting feedback')),
+                        );
+                      }
                     },
-                    child: const Text('Submit Feedback'),
-                  ),
+                    child: const Text('Submit'),
+                  )
                 ],
               ),
             ),
