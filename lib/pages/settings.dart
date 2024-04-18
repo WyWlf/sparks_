@@ -39,7 +39,7 @@ class _SettingsState extends State<Settings> {
     } catch (error) {
       // Handle network errors or exceptions
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text(
               'An error occurred. Please check your connection and try again.'),
         ),

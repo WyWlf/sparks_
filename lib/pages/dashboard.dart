@@ -42,19 +42,19 @@ class _DashboardState extends State<Dashboard> {
 
     return Stack(
       children: [
-        PagesBackground(),
+        const PagesBackground(),
         Scaffold(
-          backgroundColor: Color.fromARGB(0, 255, 255, 255),
+          backgroundColor: const Color.fromARGB(0, 255, 255, 255),
           appBar: PreferredSize(
-            preferredSize: Size.fromHeight(130),
+            preferredSize: const Size.fromHeight(130),
 
             //SPARKS
             child: AppBar(
-              iconTheme: IconThemeData(color: Colors.white),
+              iconTheme: const IconThemeData(color: Colors.white),
               backgroundColor: Colors.transparent,
               elevation: 0,
               toolbarHeight: 80,
-              title: Text(
+              title: const Text(
                 'SPARKS',
                 style: TextStyle(
                   fontSize: 30,
@@ -70,8 +70,8 @@ class _DashboardState extends State<Dashboard> {
                       builder: (context) => const NotificationsPage(),
                     ));
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 20),
+                  child: const Padding(
+                    padding: EdgeInsets.only(right: 20),
                     child: Hero(
                       tag: 'notification',
                       child: Icon(
@@ -87,26 +87,26 @@ class _DashboardState extends State<Dashboard> {
 
           //menulist
           drawer: Drawer(
-            backgroundColor: Color.fromARGB(255, 194, 255, 191),
+            backgroundColor: const Color.fromARGB(255, 194, 255, 191),
             child: SingleChildScrollView(
               child: Column(
                 children: [
                   DrawerHeader(
                     child: Image.asset('images/sparkslogo.png'),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 20,
                   ),
-                  Text(
+                  const Text(
                     'M E N U',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 20,
                   ),
                   ListTile(
-                    leading: Icon(Icons.home),
-                    title: Text('D A S H B O A R D'),
+                    leading: const Icon(Icons.home),
+                    title: const Text('D A S H B O A R D'),
                     onTap: () {
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (context) => const Dashboard(
@@ -116,8 +116,8 @@ class _DashboardState extends State<Dashboard> {
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.notifications),
-                    title: Text('N O T I F I C A T I O N S'),
+                    leading: const Icon(Icons.notifications),
+                    title: const Text('N O T I F I C A T I O N S'),
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.of(context).push(MaterialPageRoute(
@@ -126,8 +126,8 @@ class _DashboardState extends State<Dashboard> {
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.report),
-                    title: Text('R E P O R T  F O R M'),
+                    leading: const Icon(Icons.report),
+                    title: const Text('R E P O R T  F O R M'),
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => const ReportPage(),
@@ -135,8 +135,8 @@ class _DashboardState extends State<Dashboard> {
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.map),
-                    title: Text('P A R K I N G   M A P'),
+                    leading: const Icon(Icons.map),
+                    title: const Text('P A R K I N G   M A P'),
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => const MapPage(),
@@ -144,8 +144,8 @@ class _DashboardState extends State<Dashboard> {
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.settings),
-                    title: Text('S E T T I N G S'),
+                    leading: const Icon(Icons.settings),
+                    title: const Text('S E T T I N G S'),
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => const Settings(),
@@ -153,8 +153,8 @@ class _DashboardState extends State<Dashboard> {
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.logout),
-                    title: Text('L O G O U T'),
+                    leading: const Icon(Icons.logout),
+                    title: const Text('L O G O U T'),
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => const HomePage(),
@@ -168,7 +168,7 @@ class _DashboardState extends State<Dashboard> {
 
           //PARK TO PAY RECEIPT
           body: Column(children: [
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Stack(
               alignment: Alignment.topCenter,
               children: [
@@ -178,11 +178,11 @@ class _DashboardState extends State<Dashboard> {
                   color: Colors.white,
                 ),
                 Container(
-                  margin: EdgeInsets.all(5),
+                  margin: const EdgeInsets.all(5),
                   height: 200,
                   width: 360,
-                  color: Color.fromARGB(255, 51, 51, 51),
-                  child: Row(
+                  color: const Color.fromARGB(255, 51, 51, 51),
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Text('Time Started: ', style: white),
@@ -201,14 +201,14 @@ class _DashboardState extends State<Dashboard> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Text('$formattedTime', style: green),
-                      SizedBox(
+                      const SizedBox(
                         width: 160,
                       ),
-                      Text(DateFormat.HOUR24_MINUTE_SECOND, style: green),
+                      const Text(DateFormat.HOUR24_MINUTE_SECOND, style: green),
                     ],
                   ),
                 ),
-                Positioned(
+                const Positioned(
                   top: 140,
                   child: Column(
                     children: [
@@ -219,11 +219,11 @@ class _DashboardState extends State<Dashboard> {
                 ),
                 Container(
                   alignment: Alignment.topCenter,
-                  padding: EdgeInsets.all(5),
+                  padding: const EdgeInsets.all(5),
                   height: 40,
                   width: MediaQuery.of(context).size.width * 0.5,
                   color: Colors.white,
-                  child: Text(
+                  child: const Text(
                     'PAY TO PARK',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
@@ -233,22 +233,22 @@ class _DashboardState extends State<Dashboard> {
                 //TRANSACTION HISTORY
 
                 Container(
-                  padding: EdgeInsets.only(right: 10, top: 10),
+                  padding: const EdgeInsets.only(right: 10, top: 10),
                   alignment: Alignment.topRight,
                   child: PopupMenuButton(
                     itemBuilder: (context) => [
                       PopupMenuItem(
                         value: 1,
-                        child: Text("History"),
+                        child: const Text("History"),
                         onTap: () {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => TransactionHistory()));
+                                  builder: (context) => const TransactionHistory()));
                         },
                       ),
                     ],
-                    child: Icon(
+                    child: const Icon(
                       Icons.more_vert,
                       color: Colors.white,
                     ),
@@ -260,7 +260,7 @@ class _DashboardState extends State<Dashboard> {
                   child: RichText(
                     text: TextSpan(
                       children: <TextSpan>[
-                        TextSpan(text: 'Date: '),
+                        const TextSpan(text: 'Date: '),
                         TextSpan(text: formattedDate, style: green)
                       ],
                     ),
@@ -268,22 +268,22 @@ class _DashboardState extends State<Dashboard> {
                 ),
               ],
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
 
             //title AVAILABLE PARKING SPACE
             Container(
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               height: 50,
               width: MediaQuery.of(context).size.width,
-              color: Color.fromARGB(255, 51, 51, 51),
-              child: Text(
+              color: const Color.fromARGB(255, 51, 51, 51),
+              child: const Text(
                 'AVAILABLE PARKING SPACE',
                 textAlign: TextAlign.center,
                 style: AvPark,
               ),
             ),
 
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
 
@@ -298,20 +298,20 @@ class _DashboardState extends State<Dashboard> {
                     PieChartSectionData(
                         value: availablePercent,
                         title: 'Available',
-                        titleStyle: TextStyle(color: Colors.white),
+                        titleStyle: const TextStyle(color: Colors.white),
                         showTitle: true,
                         color: Colors.green),
                     PieChartSectionData(
                         value: usedPercent,
                         title: 'Used',
-                        titleStyle: TextStyle(color: Colors.white),
+                        titleStyle: const TextStyle(color: Colors.white),
                         showTitle: true,
                         color: Colors.red),
                   ]),
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             //summary of available parking space
             Positioned(
@@ -324,23 +324,23 @@ class _DashboardState extends State<Dashboard> {
                       style: sums),
                   Text('Used Parking Space : $used ($usedPercent%)',
                       style: sums),
-                  SizedBox(
+                  const SizedBox(
                     height: 20,
                   ),
                   MaterialButton(
                     minWidth: 150,
                     height: 50,
                     elevation: 10,
-                    padding: EdgeInsets.all(5),
+                    padding: const EdgeInsets.all(5),
                     color: Colors.green,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),
                     ),
                     onPressed: () {
                       Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => MapPage()));
+                          MaterialPageRoute(builder: (context) => const MapPage()));
                     },
-                    child: Text(
+                    child: const Text(
                       'View Parking Map',
                       style: TextStyle(color: Colors.white, fontSize: 15),
                     ),

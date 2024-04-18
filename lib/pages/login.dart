@@ -31,11 +31,7 @@ class LoginModel {
       {required this.plate, required this.password, required this.onlyUser});
 
   Map<String, dynamic> toJson() {
-    return {
-      'username': plate,
-      'password': password,
-      'onlyUser' : true
-    };
+    return {'username': plate, 'password': password, 'onlyUser': true};
   }
 }
 
@@ -190,7 +186,6 @@ class _LoginPageState extends State<LoginPage> {
                               onPressed: () async {
                                 final authenticate =
                                     await LocalAuth.authenticate();
-
                                 setState(() {
                                   authenticated = authenticate;
                                 });
@@ -257,11 +252,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _loginUser() async {
-    final loginModel = LoginModel(
-      plate: plate.text,
-      password: password.text,
-      onlyUser: true
-    );
+    final loginModel =
+        LoginModel(plate: plate.text, password: password.text, onlyUser: true);
     final uri = Uri.parse('https://young-cloud-49021.pktriot.net/api/login');
     final body = jsonEncode(loginModel.toJson());
     final headers = {'Content-Type': 'application/json'};
@@ -275,16 +267,17 @@ class _LoginPageState extends State<LoginPage> {
       print(code);
       print(status);
       if (status == 200 && code == 1) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) => Center(
-            child: LoadingAnimationWidget.halfTriangleDot(
-                color: Colors.green, size: 40),
-          ),
-        );
-        final Map<String, dynamic> data = parseJson['token'];
-        final String token = data['token'];
+        if (mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) => Center(
+              child: LoadingAnimationWidget.halfTriangleDot(
+                  color: Colors.green, size: 40),
+            ),
+          );
+        }
+        final String token = parseJson['token'];
 
         // Store the token securely (implement secure storage)
         // Store the token securely
@@ -293,7 +286,7 @@ class _LoginPageState extends State<LoginPage> {
         // Navigate to Dashboard and potentially pass the token
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => Dashboard(token: response),
+            builder: (context) => Dashboard(token: token),
           ),
         );
       } else if (status == 200 && code == 2) {

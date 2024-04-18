@@ -1,8 +1,13 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'dart:convert';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:get/get.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:sparks/api/access_token.dart';
 import 'package:sparks/pages/dashboard.dart';
 import 'package:sparks/pages/guest.dart';
 import 'package:sparks/pages/login.dart';
@@ -77,13 +82,25 @@ class HomePage extends StatelessWidget {
                           height: 50,
                           splashColor: Color.fromARGB(255, 178, 255, 174),
                           elevation: 10,
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              PageTransition(
-                                  child: LoginPage(),
-                                  type: PageTransitionType.fade),
-                            );
+                          onPressed: () async {
+                            var token = await AccessToken.getAccessToken();
+                            if (token != null || token != '') {
+                              Navigator.push(
+                                context,
+                                PageTransition(
+                                    child: Dashboard(
+                                      token: token,
+                                    ),
+                                    type: PageTransitionType.fade),
+                              );
+                            } else {
+                              Navigator.push(
+                                context,
+                                PageTransition(
+                                    child: LoginPage(),
+                                    type: PageTransitionType.fade),
+                              );
+                            }
                           },
                           color: Color.fromARGB(255, 255, 255, 255),
                           shape: RoundedRectangleBorder(
