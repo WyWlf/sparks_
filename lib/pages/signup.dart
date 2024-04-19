@@ -15,6 +15,8 @@ import '../widgets/pallete.dart';
 import 'package:http/http.dart' as http;
 
 class SignPage extends StatefulWidget {
+  const SignPage({super.key});
+
   @override
   State<SignPage> createState() => _SignPageState();
 }
@@ -218,21 +220,21 @@ class _SignPageState extends State<SignPage> {
                             keyboardType: TextInputType.emailAddress,
                             controller: email,
                             decoration: InputDecoration(
-                              hintText: "Email Address",
+                              hintText: "Email Address (optional)",
                               prefixIcon: Icon(Icons.email),
                             ),
                             //validate email proper format
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return "Enter your Email Adress";
-                              }
-                              bool emailValid =
-                                  RegExp(r"^[^a-z0-9]").hasMatch(value);
-                              if (!emailValid) {
-                                return "Enter Valid Email";
-                              }
-                              return null;
-                            },
+                            // validator: (value) {
+                            //   if (value!.isEmpty) {
+                            //     return "Enter your Email Adress";
+                            //   }
+                            //   // bool emailValid =
+                            //   //     RegExp(r"^[^a-z0-9]").hasMatch(value);
+                            //   // if (!emailValid) {
+                            //   //   return "Enter Valid Email";
+                            //   // }
+                            //   return null;
+                            // },
                           ),
 
                           //new password

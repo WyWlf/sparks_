@@ -1,11 +1,8 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
 import 'dart:convert';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sparks/api/local_auth_service.dart';
@@ -264,8 +261,6 @@ class _LoginPageState extends State<LoginPage> {
 
       dynamic code = parseJson['code'];
       dynamic status = parseJson['status'];
-      print(code);
-      print(status);
       if (status == 200 && code == 1) {
         if (mounted) {
           showDialog(

@@ -4,8 +4,7 @@ import 'dart:convert';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:get/get.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sparks/api/access_token.dart';
 import 'package:sparks/pages/dashboard.dart';
@@ -15,6 +14,7 @@ import 'package:sparks/pages/signup.dart';
 import 'package:sparks/widgets/bgimage.dart';
 import 'package:sparks/widgets/widgets.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,23 +83,38 @@ class HomePage extends StatelessWidget {
                           splashColor: Color.fromARGB(255, 178, 255, 174),
                           elevation: 10,
                           onPressed: () async {
+                            final storage = FlutterSecureStorage();
                             var token = await AccessToken.getAccessToken();
-                            if (token != null || token != '') {
-                              Navigator.push(
-                                context,
-                                PageTransition(
-                                    child: Dashboard(
-                                      token: token,
-                                    ),
-                                    type: PageTransitionType.fade),
-                              );
-                            } else {
-                              Navigator.push(
-                                context,
-                                PageTransition(
-                                    child: LoginPage(),
-                                    type: PageTransitionType.fade),
-                              );
+                            final uri = Uri.parse(
+                                'https://young-cloud-49021.pktriot.net/api/tokenVerifier');
+                            final body = jsonEncode({'token': token});
+                            final headers = {
+                              'Content-Type': 'application/json'
+                            };
+                            try {
+                              final response = await http.post(uri,
+                              body: body, headers: headers);
+                              var json = jsonDecode(response.body);
+
+                              if (json['resp']) {
+                                Navigator.push(
+                                  context,
+                                  PageTransition(
+                                      child: Dashboard(
+                                        token: token,
+                                      ),
+                                      type: PageTransitionType.fade),
+                                );
+                              } else {
+                                await storage.delete(key: 'token');
+                                Navigator.push(
+                                  context,
+                                  PageTransition(
+                                      child: LoginPage(),
+                                      type: PageTransitionType.fade),
+                                );
+                              }
+                            } catch (error) {
                             }
                           },
                           color: Color.fromARGB(255, 255, 255, 255),

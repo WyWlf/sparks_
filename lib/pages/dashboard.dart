@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:sparks/main.dart';
@@ -10,28 +13,80 @@ import 'package:sparks/pages/transac_history.dart';
 import 'package:sparks/widgets/pagesbg.dart';
 import 'package:sparks/widgets/pages.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 import 'package:sparks/widgets/pallete.dart';
 
 class Dashboard extends StatefulWidget {
-  const Dashboard({super.key, required String token});
-
+  final String token;
+  const Dashboard({super.key, required this.token});
   @override
   State<Dashboard> createState() => _DashboardState();
 }
 
 class _DashboardState extends State<Dashboard> {
+  late Timer _timer;
+  String get token => widget.token;
   double totalHoursWorked = 5;
   double totalPayment = 0;
+  bool initialized = false;
+  bool counter = false;
+  var parseJson = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Call your method to start fetching transactions and set up the timer
+  }
+
+  @override
+  void dispose() {
+    // Cancel the timer when the widget is disposed
+    _timer.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    var time = DateTime.now();
-    final format = DateFormat('HH:mm:ss');
     final formatter = DateFormat('yyyy-MM-dd');
-    final formattedTime = format.format(time);
+    var formattedTime = 'Not active';
+    double cost = 0;
+    int hours = 0;
+    int minutes = 0;
     final formattedDate = formatter.format(now);
 
+    void getTransaction() async {
+      final uri = Uri.parse(
+          'https://young-cloud-49021.pktriot.net/api/getUserTransaction');
+      final body = jsonEncode({'token': token});
+      final headers = {'Content-Type': 'application/json'};
+      try {
+        final response = await http.post(uri, body: body, headers: headers);
+        var json = jsonDecode(response.body);
+        if (!initialized) {
+          setState(() {
+            parseJson = json;
+            initialized = true;
+          });
+        } else if (initialized && json['resp'] == true) {
+          _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+            setState(() {
+              parseJson = json;
+            });
+          });
+        }
+      } catch (error) {
+        print(error);
+      }
+    }
+
+    getTransaction();
+    if (initialized) {
+      formattedTime = parseJson['hma'];
+      cost = parseJson['cost'];
+      hours = parseJson['time']['hours'];
+      minutes = parseJson['time']['minutes'];
+    }
     int available = 20;
     int used = 30;
     int total = available + used;
@@ -109,8 +164,8 @@ class _DashboardState extends State<Dashboard> {
                     title: const Text('D A S H B O A R D'),
                     onTap: () {
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) => const Dashboard(
-                          token: '',
+                        builder: (context) => Dashboard(
+                          token: widget.token,
                         ),
                       ));
                     },
@@ -196,24 +251,24 @@ class _DashboardState extends State<Dashboard> {
                 Container(),
                 Positioned(
                   top: 115,
-                  left: 55,
+                  left: 70,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Text('$formattedTime', style: green),
+                      Text(formattedTime, style: green),
                       const SizedBox(
-                        width: 160,
+                        width: 125,
                       ),
-                      const Text(DateFormat.HOUR24_MINUTE_SECOND, style: green),
+                      Text('$hours' ' hr. & ' '$minutes' ' min.', style: green),
                     ],
                   ),
                 ),
-                const Positioned(
+                Positioned(
                   top: 140,
                   child: Column(
                     children: [
-                      Text('Total Amount: ', style: white),
-                      Text('300.00', style: amount)
+                      const Text('Total Amount: ', style: white),
+                      Text('PHP ' '$cost', style: amount)
                     ],
                   ),
                 ),
@@ -233,7 +288,7 @@ class _DashboardState extends State<Dashboard> {
                 //TRANSACTION HISTORY
 
                 Container(
-                  padding: const EdgeInsets.only(right: 10, top: 10),
+                  padding: const EdgeInsets.only(right: 20, top: 10),
                   alignment: Alignment.topRight,
                   child: PopupMenuButton(
                     itemBuilder: (context) => [
@@ -244,7 +299,8 @@ class _DashboardState extends State<Dashboard> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const TransactionHistory()));
+                                  builder: (context) =>
+                                      const TransactionHistory()));
                         },
                       ),
                     ],
@@ -337,8 +393,10 @@ class _DashboardState extends State<Dashboard> {
                       borderRadius: BorderRadius.circular(50),
                     ),
                     onPressed: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => const MapPage()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const MapPage()));
                     },
                     child: const Text(
                       'View Parking Map',

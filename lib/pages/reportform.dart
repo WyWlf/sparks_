@@ -89,7 +89,7 @@ class _ReportPageState extends State<ReportPage> {
         // Upload image to ImgBB API
         var url = Uri.parse('https://api.imgbb.com/1/upload');
         var headers = {'Content-Type': 'multipart/form-data'};
-        var request = http.MultipartRequest('POST', url);
+        var request = http.MultipartRequest('POST', url,);
         request.fields['key'] = '9a1831cc0674af49d4d08b72d378aaa8';
         request.files.add(http.MultipartFile.fromBytes(
           'image',
