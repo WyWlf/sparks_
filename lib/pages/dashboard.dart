@@ -26,14 +26,55 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   late Timer _timer;
   String get token => widget.token;
-  double totalHoursWorked = 5;
-  double totalPayment = 0;
   bool initialized = false;
   bool counter = false;
   var parseJson = {};
+  var parkingJson = {};
+
+  void getTransaction() async {
+    final uri = Uri.parse(
+        'https://young-cloud-49021.pktriot.net/api/getUserTransaction');
+    final body = jsonEncode({'token': token});
+    final headers = {'Content-Type': 'application/json'};
+    try {
+      final response = await http.post(uri, body: body, headers: headers);
+      var json = jsonDecode(response.body);
+      print(json);
+      setState(() {
+        if (json['resp'] == true) {
+          parseJson = json;
+          initialized = true;
+        } else {
+          parseJson = {};
+        }
+      });
+    } catch (error) {
+      print(error);
+    }
+  }
+
+  void parkingSpaces() async {
+    final uri =
+        Uri.parse('https://young-cloud-49021.pktriot.net/api/getParkingFloors');
+    try {
+      final response = await http.get(uri);
+      var json = jsonDecode(response.body);
+      setState(() {
+        parkingJson = json;
+      });
+    } catch (error) {
+      print(error);
+    }
+  }
 
   @override
   void initState() {
+    getTransaction();
+    parkingSpaces();
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      getTransaction();
+      parkingSpaces();
+    });
     super.initState();
     // Call your method to start fetching transactions and set up the timer
   }
@@ -55,46 +96,35 @@ class _DashboardState extends State<Dashboard> {
     int minutes = 0;
     final formattedDate = formatter.format(now);
 
-    void getTransaction() async {
-      final uri = Uri.parse(
-          'https://young-cloud-49021.pktriot.net/api/getUserTransaction');
-      final body = jsonEncode({'token': token});
-      final headers = {'Content-Type': 'application/json'};
-      try {
-        final response = await http.post(uri, body: body, headers: headers);
-        var json = jsonDecode(response.body);
-        if (!initialized) {
-          setState(() {
-            parseJson = json;
-            initialized = true;
-          });
-        } else if (initialized && json['resp'] == true) {
-          _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
-            setState(() {
-              parseJson = json;
-            });
-          });
-        }
-      } catch (error) {
-        print(error);
+    int available = 0;
+    int used = 0;
+    int total = 0;
+    double availablePercent = 0;
+    double usedPercent = 0;
+
+    if (initialized) {
+      if (parseJson.isNotEmpty) {
+        formattedTime = parseJson['hma'];
+        cost = parseJson['cost'];
+        hours = parseJson['time']['hours'];
+        minutes = parseJson['time']['minutes'];
+      } else {
+        formattedTime = 'Not active';
+        cost = 0;
+        hours = 0;
+        minutes = 0;
       }
     }
 
-    getTransaction();
-    if (initialized) {
-      formattedTime = parseJson['hma'];
-      cost = parseJson['cost'];
-      hours = parseJson['time']['hours'];
-      minutes = parseJson['time']['minutes'];
+    available = int.parse(parkingJson['row'][0]['max']) -
+        int.parse(parkingJson['row'][0]['used']);
+    used = int.parse(parkingJson['row'][0]['used']);
+    total = available + used;
+    availablePercent = (available / total) * 100;
+
+    if (used > 0) {
+      usedPercent = (used / total) * 100;
     }
-    int available = 20;
-    int used = 30;
-    int total = available + used;
-
-// Calculate percentages for pie chart slices
-    final availablePercent = (available / total) * 100;
-    final usedPercent = (used / total) * 100;
-
     return Stack(
       children: [
         const PagesBackground(),
@@ -163,11 +193,7 @@ class _DashboardState extends State<Dashboard> {
                     leading: const Icon(Icons.home),
                     title: const Text('D A S H B O A R D'),
                     onTap: () {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) => Dashboard(
-                          token: widget.token,
-                        ),
-                      ));
+                      Navigator.pop(context);
                     },
                   ),
                   ListTile(
@@ -345,7 +371,7 @@ class _DashboardState extends State<Dashboard> {
 
             //PIE CHART AVAILABLE PARKING SPACES
 
-            Container(
+            SizedBox(
               height: 110,
               child: AspectRatio(
                 aspectRatio: 1,
@@ -354,13 +380,15 @@ class _DashboardState extends State<Dashboard> {
                     PieChartSectionData(
                         value: availablePercent,
                         title: 'Available',
-                        titleStyle: const TextStyle(color: Colors.white),
+                        titleStyle: const TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.bold),
                         showTitle: true,
                         color: Colors.green),
                     PieChartSectionData(
                         value: usedPercent,
                         title: 'Used',
-                        titleStyle: const TextStyle(color: Colors.white),
+                        titleStyle: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                         showTitle: true,
                         color: Colors.red),
                   ]),
@@ -378,7 +406,7 @@ class _DashboardState extends State<Dashboard> {
                   Text(
                       'Total Available Parking Space: $available ($availablePercent%)',
                       style: sums),
-                  Text('Used Parking Space : $used ($usedPercent%)',
+                  Text('Occupied Parking Space : $used ($usedPercent%)',
                       style: sums),
                   const SizedBox(
                     height: 20,

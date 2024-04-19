@@ -115,6 +115,7 @@ class HomePage extends StatelessWidget {
                                 );
                               }
                             } catch (error) {
+                              print(error);
                             }
                           },
                           color: Color.fromARGB(255, 255, 255, 255),
