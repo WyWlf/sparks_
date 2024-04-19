@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -7,13 +8,16 @@ import 'package:http/http.dart' as http;
 import 'package:sparks/widgets/pages.dart';
 
 class Settings extends StatefulWidget {
-  const Settings({super.key});
+  final String token;
+  const Settings({super.key, required this.token});
 
   @override
   State<Settings> createState() => _SettingsState();
 }
 
 class _SettingsState extends State<Settings> {
+  String get token => widget.token;
+  late Timer _timer;
   bool _showForm = false;
   bool _passChange = false;
   TextEditingController nickname = TextEditingController();
@@ -22,10 +26,11 @@ class _SettingsState extends State<Settings> {
   TextEditingController newPass = TextEditingController();
   TextEditingController confPass = TextEditingController();
   TextEditingController currPass = TextEditingController();
-  Future<void> getUserInfo() async {
-    final uri = Uri.parse('https://young-cloud-49021.pktriot.net/api/getUsers');
+
+  void getUserInfo() async {
+    final uri = Uri.parse('https://young-cloud-49021.pktriot.net/api/userInfo');
     final headers = {'Content-Type': 'application/json'};
-    final body = jsonEncode({'search': 'haroldtest', 'onlyUsers': true});
+    final body = jsonEncode({'token': token, 'onlyUsers': true});
     try {
       var client = http.Client();
       final response = await client.post(uri, body: body, headers: headers);
@@ -45,6 +50,14 @@ class _SettingsState extends State<Settings> {
         ),
       );
     }
+  }
+
+  @override
+  void initState() {
+    getUserInfo();
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {});
+    super.initState();
+    // Call your method to start fetching transactions and set up the timer
   }
 
   @override

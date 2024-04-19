@@ -2,19 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:sparks/main.dart';
 import 'package:sparks/pages/map.dart';
 import 'package:sparks/pages/notifications.dart';
 import 'package:sparks/pages/reportform.dart';
 import 'package:sparks/pages/settings.dart';
-
-import 'package:sparks/pages/transac_history.dart';
 import 'package:sparks/widgets/pagesbg.dart';
 import 'package:sparks/widgets/pages.dart';
-import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:sparks/widgets/pallete.dart';
 
@@ -91,13 +86,10 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final formatter = DateFormat('yyyy-MM-dd');
     var formattedTime = 'Not active';
     double cost = 0;
     int hours = 0;
     int minutes = 0;
-    final formattedDate = formatter.format(now);
 
     int available = 0;
     int used = 0;
@@ -117,374 +109,312 @@ class _DashboardState extends State<Dashboard> {
         hours = 0;
         minutes = 0;
       }
-      available = int.parse(parkingJson['row'][0]['max']) -
-          int.parse(parkingJson['row'][0]['used']);
-      used = int.parse(parkingJson['row'][0]['used']);
-      total = available + used;
-      availablePercent = (available / total) * 100;
-      if (used > 0) {
-        usedPercent = (used / total) * 100;
+      if (parkingJson.isNotEmpty) {
+        available = int.parse(parkingJson['row'][0]['max']) -
+            int.parse(parkingJson['row'][0]['used']);
+        used = int.parse(parkingJson['row'][0]['used']);
+        total = available + used;
+        availablePercent = (available / total) * 100;
+        if (used > 0) {
+          usedPercent = (used / total) * 100;
+        }
       }
     }
 
-    return Stack(
-      children: [
-        const PagesBackground(),
-        Scaffold(
-          backgroundColor: const Color.fromARGB(0, 255, 255, 255),
-          appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(130),
+    return MaterialApp(
+      title: 'SPARKS',
+      home: Stack(
+        children: [
+          const PagesBackground(),
+          Scaffold(
+            backgroundColor: const Color.fromARGB(0, 255, 255, 255),
+            appBar: PreferredSize(
+              preferredSize: const Size.fromHeight(130),
 
-            //SPARKS
-            child: AppBar(
-              iconTheme: const IconThemeData(color: Colors.white),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              toolbarHeight: 80,
-              title: const Text(
-                'SPARKS',
-                style: TextStyle(
-                    fontSize: 30,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold),
-              ),
-
-              //notification button
-              actions: <Widget>[
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const NotificationsPage(),
-                    ));
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.only(right: 20),
-                    child: Hero(
-                      tag: 'notification',
-                      child: Icon(
-                        Icons.notifications,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+              //SPARKS
+              child: AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                toolbarHeight: 80,
+                title: const Text(
+                  'SPARKS',
+                  style: TextStyle(
+                      fontSize: 30,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold),
                 ),
-              ],
-            ),
-          ),
 
-          //menulist
-          drawer: Drawer(
-            backgroundColor: const Color.fromARGB(255, 194, 255, 191),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  DrawerHeader(
-                    child: Image.asset('images/sparkslogo.png'),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  const Text(
-                    'M E N U',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.home),
-                    title: const Text('D A S H B O A R D'),
+                //notification button
+                actions: <Widget>[
+                  GestureDetector(
                     onTap: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.notifications),
-                    title: const Text('N O T I F I C A T I O N S'),
-                    onTap: () {
-                      Navigator.pop(context);
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => const NotificationsPage(),
                       ));
                     },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.report),
-                    title: const Text('R E P O R T  F O R M'),
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const ReportPage(),
-                      ));
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.map),
-                    title: const Text('P A R K I N G   M A P'),
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const MapPage(),
-                      ));
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.settings),
-                    title: const Text('S E T T I N G S'),
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const Settings(),
-                      ));
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.logout),
-                    title: const Text('L O G O U T'),
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const HomePage(),
-                      ));
-                    },
+                    child: const Padding(
+                      padding: EdgeInsets.only(right: 20),
+                      child: Hero(
+                        tag: 'notification',
+                        child: Icon(
+                          Icons.notifications,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
 
-          //PARK TO PAY RECEIPT
-          body: Column(children: [
-            Stack(
-              alignment: Alignment.topCenter,
-              children: [
-                Container(
-                  height: 200,
-                  width: 370,
-                  color: Colors.white,
-                  child: Container(
-                    margin: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                        border: Border.all(width: 0, color: Colors.white),
-                        color: const Color.fromARGB(255, 51, 51, 51)),
-                    child: Flex(
-                      direction: Axis.vertical,
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(width: 0, color: Colors.white),
-                            color: Colors.white,
-                          ),
-                          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                          child: const Text(
-                            'PAY-TO-PARK',
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20),
-                          ),
-                        ),
-                        // receipt
-                        Flex(
-                          direction: Axis.vertical,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Flex(
-                              direction: Axis.horizontal,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Flex(
-                                  direction: Axis.vertical,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          20, 15, 0, 0),
-                                      child: const Text(
-                                        'Parked In:',
-                                        style: TextStyle(
-                                            color: Colors.white, fontSize: 12),
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          20, 0, 0, 0),
-                                      child: Text(
-                                        formattedTime,
-                                        style: const TextStyle(
-                                            color: Colors.green, fontSize: 12),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Flex(
-                                  direction: Axis.vertical,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          0, 15, 20, 0),
-                                      child: const Text(
-                                        'Total Parking Time:',
-                                        style: TextStyle(
-                                            color: Colors.white, fontSize: 12),
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          0, 0, 20, 0),
-                                      child: Text(
-                                        '$hours' ' hr. & ' '$minutes' ' min.',
-                                        style: const TextStyle(
-                                            color: Colors.green, fontSize: 12),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+            //menulist
+            drawer: Drawer(
+              backgroundColor: const Color.fromARGB(255, 194, 255, 191),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    DrawerHeader(
+                      child: Image.asset('images/sparkslogo.png'),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    const Text(
+                      'M E N U',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.home),
+                      title: const Text('D A S H B O A R D'),
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => Dashboard(token: widget.token,),
+                        ));
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.notifications),
+                      title: const Text('N O T I F I C A T I O N S'),
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const NotificationsPage(),
+                        ));
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.report),
+                      title: const Text('R E P O R T  F O R M'),
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const ReportPage(),
+                        ));
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.map),
+                      title: const Text('P A R K I N G   M A P'),
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const MapPage(),
+                        ));
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.settings),
+                      title: const Text('S E T T I N G S'),
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const Settings(),
+                        ));
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.logout),
+                      title: const Text('L O G O U T'),
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const HomePage(),
+                        ));
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            //PARK TO PAY RECEIPT
+            body: Column(children: [
+              Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  Container(
+                    height: 200,
+                    width: 370,
+                    color: Colors.white,
+                    child: Container(
+                      margin: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                          border: Border.all(width: 0, color: Colors.white),
+                          color: const Color.fromARGB(255, 51, 51, 51)),
+                      child: Flex(
+                        direction: Axis.vertical,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(width: 0, color: Colors.white),
+                              color: Colors.white,
                             ),
-                            Flex(
-                              direction: Axis.vertical,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Padding(padding: EdgeInsets.fromLTRB(0, 50, 0, 0)),
-                                const Text(
-                                  'Parking Fee:',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                Text(
-                                  'PHP. ' '$cost',
-                                  style: const TextStyle(color: Colors.green),
-                                )
-                              ],
-                            )
-                          ],
-                        )
-                      ],
+                            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                            child: const Text(
+                              'PAY-TO-PARK',
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20),
+                            ),
+                          ),
+                          // receipt
+                          Flex(
+                            direction: Axis.vertical,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flex(
+                                direction: Axis.horizontal,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Flex(
+                                    direction: Axis.vertical,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            20, 15, 0, 0),
+                                        child: const Text(
+                                          'Parked In:',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12),
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            20, 0, 0, 0),
+                                        child: Text(
+                                          formattedTime,
+                                          style: const TextStyle(
+                                              color: Colors.green,
+                                              fontSize: 12),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Flex(
+                                    direction: Axis.vertical,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            0, 15, 20, 0),
+                                        child: const Text(
+                                          'Total Parking Time:',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12),
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            0, 0, 20, 0),
+                                        child: Text(
+                                          '$hours' ' hr. & ' '$minutes' ' min.',
+                                          style: const TextStyle(
+                                              color: Colors.green,
+                                              fontSize: 12),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              Flex(
+                                direction: Axis.vertical,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Padding(
+                                      padding:
+                                          EdgeInsets.fromLTRB(0, 50, 0, 0)),
+                                  const Text(
+                                    'Parking Fee:',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  Text(
+                                    'PHP. ' '$cost',
+                                    style: const TextStyle(
+                                        color: Colors.green, fontSize: 20),
+                                  )
+                                ],
+                              )
+                            ],
+                          )
+                        ],
+                      ),
                     ),
                   ),
-                ),
-
-                // Positioned(
-                //   top: 115,
-                //   left: 70,
-                //   child: Row(
-                //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                //     children: [
-                //       Text(formattedTime, style: green),
-                //       const SizedBox(
-                //         width: 125,
-                //       ),
-                //       Text('$hours' ' hr. & ' '$minutes' ' min.', style: green),
-                //     ],
-                //   ),
-                // ),
-                // Positioned(
-                //   top: 140,
-                //   child: Column(
-                //     children: [
-                //       const Text('Total Amount: ', style: white),
-                //       Text('PHP ' '$cost', style: amount)
-                //     ],
-                //   ),
-                // ),
-                // Container(
-                //   alignment: Alignment.topCenter,
-                //   padding: const EdgeInsets.all(5),
-                //   height: 40,
-                //   width: MediaQuery.of(context).size.width * 0.5,
-                //   color: Colors.white,
-                //   child: const Text(
-                //     'PAY TO PARK',
-                //     textAlign: TextAlign.center,
-                //     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                //   ),
-                // ),
-
-                //TRANSACTION HISTORY
-
-                // Container(
-                //   padding: const EdgeInsets.only(right: 20, top: 10),
-                //   alignment: Alignment.topRight,
-                //   child: PopupMenuButton(
-                //     itemBuilder: (context) => [
-                //       PopupMenuItem(
-                //         value: 1,
-                //         child: const Text("History"),
-                //         onTap: () {
-                //           Navigator.push(
-                //               context,
-                //               MaterialPageRoute(
-                //                   builder: (context) =>
-                //                       const TransactionHistory()));
-                //         },
-                //       ),
-                //     ],
-                //     child: const Icon(
-                //       Icons.more_vert,
-                //       color: Colors.white,
-                //     ),
-                //   ),
-                // ),
-                // Positioned(
-                //   top: 50,
-                //   left: 130,
-                //   child: RichText(
-                //     text: TextSpan(
-                //       children: <TextSpan>[
-                //         const TextSpan(text: 'Date: '),
-                //         TextSpan(text: formattedDate, style: green)
-                //       ],
-                //     ),
-                //   ),
-                // ),
-              ],
-            ),
-            const SizedBox(height: 30),
-
-            //title AVAILABLE PARKING SPACE
-            Container(
-              padding: const EdgeInsets.all(10),
-              height: 50,
-              width: MediaQuery.of(context).size.width,
-              color: const Color.fromARGB(255, 51, 51, 51),
-              child: const Text(
-                'AVAILABLE PARKING SPACE',
-                textAlign: TextAlign.center,
-                style: AvPark,
+                ],
               ),
-            ),
+              const SizedBox(height: 30),
 
-            const SizedBox(
-              height: 10,
-            ),
-
-            //PIE CHART AVAILABLE PARKING SPACES
-
-            SizedBox(
-              height: 110,
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: PieChart(
-                  PieChartData(sections: [
-                    PieChartSectionData(
-                        value: availablePercent,
-                        title: 'Available',
-                        titleStyle: const TextStyle(
-                            color: Colors.black, fontWeight: FontWeight.bold),
-                        showTitle: true,
-                        color: Colors.green),
-                    PieChartSectionData(
-                        value: usedPercent,
-                        title: 'Used',
-                        titleStyle: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                        showTitle: true,
-                        color: Colors.red),
-                  ]),
+              //title AVAILABLE PARKING SPACE
+              Container(
+                padding: const EdgeInsets.all(10),
+                height: 50,
+                width: MediaQuery.of(context).size.width,
+                color: const Color.fromARGB(255, 51, 51, 51),
+                child: const Text(
+                  'AVAILABLE PARKING SPACE',
+                  textAlign: TextAlign.center,
+                  style: AvPark,
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
 
-            //summary of available parking space
-            Positioned(
-              top: 230,
-              child: Column(
+              const SizedBox(
+                height: 10,
+              ),
+
+              //PIE CHART AVAILABLE PARKING SPACES
+
+              SizedBox(
+                height: 110,
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: PieChart(
+                    PieChartData(sections: [
+                      PieChartSectionData(
+                          value: availablePercent,
+                          title: 'Available',
+                          titleStyle: const TextStyle(
+                              color: Colors.black, fontWeight: FontWeight.bold),
+                          showTitle: true,
+                          color: Colors.green),
+                      PieChartSectionData(
+                          value: usedPercent,
+                          title: 'Used',
+                          titleStyle: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                          showTitle: true,
+                          color: Colors.red),
+                    ]),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              //summary of available parking space
+              Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Text(
@@ -517,10 +447,10 @@ class _DashboardState extends State<Dashboard> {
                   )
                 ],
               ),
-            ),
-          ]),
-        ),
-      ],
+            ]),
+          ),
+        ],
+      ),
     );
   }
 }
