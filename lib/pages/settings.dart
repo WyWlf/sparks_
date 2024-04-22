@@ -1,10 +1,14 @@
+// import 'dart:async';
 import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:sparks/main.dart';
-import 'package:sparks/pages/feedbackform.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+// import 'package:sparks/main.dart';
+// import 'package:sparks/pages/feedbackform.dart';
 import 'package:http/http.dart' as http;
+import 'package:sparks/main.dart';
 import 'package:sparks/widgets/pages.dart';
 
 class Settings extends StatefulWidget {
@@ -17,8 +21,6 @@ class Settings extends StatefulWidget {
 
 class _SettingsState extends State<Settings> {
   String get token => widget.token;
-  late Timer _timer;
-  bool _showForm = false;
   bool _passChange = false;
   TextEditingController nickname = TextEditingController();
   TextEditingController plate = TextEditingController();
@@ -26,7 +28,7 @@ class _SettingsState extends State<Settings> {
   TextEditingController newPass = TextEditingController();
   TextEditingController confPass = TextEditingController();
   TextEditingController currPass = TextEditingController();
-
+  final _formfield = GlobalKey<FormState>();
   void getUserInfo() async {
     final uri = Uri.parse('https://young-cloud-49021.pktriot.net/api/userInfo');
     final headers = {'Content-Type': 'application/json'};
@@ -43,19 +45,93 @@ class _SettingsState extends State<Settings> {
       }
     } catch (error) {
       // Handle network errors or exceptions
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              'An error occurred. Please check your connection and try again.'),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'An error occurred. Please check your connection and try again.'),
+          ),
+        );
+      }
+    }
+  }
+
+  bool verifyForm() {
+    return newPass.text.toLowerCase() == confPass.text.toLowerCase();
+  }
+
+  void updateAccount() async {
+    if (verifyForm()) {
+      final uri =
+          Uri.parse('https://young-cloud-49021.pktriot.net/api/updateUserInfo');
+      final headers = {'Content-Type': 'application/json'};
+      final body = jsonEncode({
+        'token': token,
+        'username': nickname.text,
+        'plate': plate.text,
+        'email': email.text,
+        'pass': currPass.text,
+        'newpass': newPass.text,
+        'changepass': _passChange
+      });
+      try {
+        var client = http.Client();
+        final response = await client.post(uri, body: body, headers: headers);
+        if (response.statusCode == 200) {
+          var json = response.body;
+          var parseJson = jsonDecode(json);
+          if (parseJson['response']) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Account updated successfully.'),
+                ),
+              );
+
+              const storage = FlutterSecureStorage();
+              await storage.delete(key: 'token');
+
+              Timer(const Duration(seconds: 1), () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const HomePage(),
+                ));
+              });
+            }
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(parseJson['msg']),
+                ),
+              );
+            }
+          }
+        }
+      } catch (error) {
+        // Handle network errors or exceptions
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'An error occurred. Please check your connection and try again.'),
+            ),
+          );
+        }
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Password does not match.'),
+          ),
+        );
+      }
     }
   }
 
   @override
   void initState() {
     getUserInfo();
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {});
     super.initState();
     // Call your method to start fetching transactions and set up the timer
   }
@@ -95,160 +171,200 @@ class _SettingsState extends State<Settings> {
                   ),
                   color: Colors.white,
                 ),
-                child: ListTile(
-                  leading: const Icon(Icons.account_circle),
-                  title: const Text('Account Settings'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      setState(() {
-                        _showForm = !_showForm;
-                        getUserInfo();
-                      });
-                    },
-                  ),
+                child: const ListTile(
+                  leading: Icon(Icons.account_circle),
+                  title: Text('Account Settings'),
                 ),
               ),
-              if (_showForm)
-                Container(
+              Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                   decoration: const BoxDecoration(color: Colors.white),
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        controller: nickname,
-                        decoration: const InputDecoration(
-                          labelText: 'Nickname/Username',
+                  child: Form(
+                    key: _formfield,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: nickname,
+                          decoration: const InputDecoration(
+                            labelText: 'Nickname/Username',
+                          ),
+                          onChanged: (value) => {
+                            nickname.text =
+                                value.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')
+                          },
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return "This is a required field.";
+                            }
+                            return null;
+                          },
                         ),
-                      ),
-                      TextFormField(
-                        controller: plate,
-                        decoration: const InputDecoration(
-                          labelText: 'Plate Number',
+                        TextFormField(
+                          controller: plate,
+                          decoration: const InputDecoration(
+                            labelText: 'Plate Number',
+                          ),
+                          onChanged: (value) => {
+                            plate.text =
+                                value.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')
+                          },
                         ),
-                      ),
-                      TextFormField(
-                        controller: email,
-                        decoration: const InputDecoration(
-                          labelText: 'Email',
-                        ),
-                      ),
-                      TextFormField(
-                        obscureText: true,
-                        controller: currPass,
-                        decoration: InputDecoration(
-                          labelText: 'Current Password',
-                          suffixIcon: InkWell(
-                            onTap: () {
-                              setState(() {
-                                _passChange = !_passChange;
-                              });
-                            },
-                            child: const Icon(Icons.edit),
+                        TextFormField(
+                          controller: email,
+                          decoration: const InputDecoration(
+                            labelText: 'Email (optional)',
                           ),
                         ),
-                      ),
-                      if (_passChange)
-                        Column(
+                        if (_passChange)
+                          Column(
+                            children: [
+                              Container(
+                                decoration:
+                                    const BoxDecoration(color: Colors.white),
+                                child: TextFormField(
+                                  obscureText: true,
+                                  controller: currPass,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Current Password',
+                                  ),
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return "Enter Password";
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              Container(
+                                decoration:
+                                    const BoxDecoration(color: Colors.white),
+                                child: TextFormField(
+                                  obscureText: true,
+                                  controller: newPass,
+                                  decoration: const InputDecoration(
+                                    labelText: 'New Password',
+                                  ),
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return "Enter New Password";
+                                    }
+
+                                    if (newPass.text.length < 6) {
+                                      return 'Password must be at least 8 characters long';
+                                    }
+                                    if (!value.contains(RegExp(r'[A-Z]'))) {
+                                      return 'Password must contain at least one uppercase letter';
+                                    }
+                                    if (!value.contains(RegExp(r'[a-z]'))) {
+                                      return 'Password must contain at least one lowercase letter';
+                                    }
+                                    if (!value.contains(RegExp(r'[0-9]'))) {
+                                      return 'Password must contain at least one number';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              Container(
+                                decoration:
+                                    const BoxDecoration(color: Colors.white),
+                                child: TextFormField(
+                                  obscureText: true,
+                                  controller: confPass,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Confirm Password',
+                                  ),
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return "Enter Confirmation Password";
+                                    }
+                                    if (confPass.text.length < 6) {
+                                      return 'Password must be at least 8 characters long';
+                                    }
+                                    if (!value.contains(RegExp(r'[A-Z]'))) {
+                                      return 'Password must contain at least one uppercase letter';
+                                    }
+                                    if (!value.contains(RegExp(r'[a-z]'))) {
+                                      return 'Password must contain at least one lowercase letter';
+                                    }
+                                    if (!value.contains(RegExp(r'[0-9]'))) {
+                                      return 'Password must contain at least one number';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                            ],
+                          ),
+                        const SizedBox(height: 30),
+                        Flex(
+                          direction: Axis.horizontal,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Container(
-                              decoration:
-                                  const BoxDecoration(color: Colors.white),
-                              child: TextFormField(
-                                obscureText: true,
-                                controller: newPass,
-                                decoration: const InputDecoration(
-                                  labelText: 'New Password',
-                                ),
+                            ElevatedButton(
+                              onPressed: () {
+                                // Save changes and hide the form
+                                if (_formfield.currentState!.validate()) {
+                                  setState(() {
+                                    updateAccount();
+                                  });
+                                }
+                              },
+                              style: const ButtonStyle(
+                                elevation: MaterialStatePropertyAll(3),
+                                backgroundColor:
+                                    MaterialStatePropertyAll(Colors.green),
+                              ),
+                              child: const Text(
+                                'Save Changes',
+                                style: TextStyle(color: Colors.white),
                               ),
                             ),
-                            Container(
-                              decoration:
-                                  const BoxDecoration(color: Colors.white),
-                              child: TextFormField(
-                                obscureText: true,
-                                controller: confPass,
-                                decoration: const InputDecoration(
-                                  labelText: 'Confirm Password',
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
+                            const SizedBox(width: 20, height: 20),
                             ElevatedButton(
                               onPressed: () {
                                 // Save changes and hide the form
                                 setState(() {
-                                  _passChange = false;
+                                  currPass.clear();
+                                  confPass.clear();
+                                  newPass.clear();
+                                  _passChange = !_passChange;
                                 });
                               },
                               style: const ButtonStyle(
-                                elevation: MaterialStatePropertyAll(8),
+                                elevation: MaterialStatePropertyAll(3),
                                 backgroundColor:
                                     MaterialStatePropertyAll(Colors.white),
                               ),
-                              child: const Text('Save New Password',
-                                  style: TextStyle(color: Colors.black)),
+                              child: Text(
+                                  !_passChange ? 'Change password' : 'Cancel',
+                                  style: const TextStyle(color: Colors.black)),
                             ),
                           ],
-                        ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Save changes and hide the form
-                          setState(() {
-                            _showForm = false;
-                          });
-                        },
-                        style: const ButtonStyle(
-                          elevation: MaterialStatePropertyAll(8),
-                          backgroundColor:
-                              MaterialStatePropertyAll(Colors.green),
-                        ),
-                        child: const Text(
-                          'Save Changes',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                ),
-                child: ListTile(
-                  leading: const Icon(Icons.chat),
-                  title: const Text('Feedback Form'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.arrow_forward_ios),
-                    onPressed: () {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) => FeedbackForm(),
-                      ));
-                    },
-                  ),
-                ),
-              ),
-
-              //log out
-              Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                ),
-                child: ListTile(
-                  leading: const Icon(Icons.exit_to_app),
-                  title: const Text('Log Out'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.arrow_forward_ios),
-                    onPressed: () {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) => const MyApp(),
-                      ));
-                    },
-                  ),
-                ),
-              ),
+                        )
+                      ],
+                    ),
+                  )
+                  // Container(
+                  //   decoration: const BoxDecoration(
+                  //     color: Colors.white,
+                  //   ),
+                  //   child: ListTile(
+                  //     leading: const Icon(Icons.chat),
+                  //     title: const Text('Feedback Form'),
+                  //     trailing: IconButton(
+                  //       icon: const Icon(Icons.arrow_forward_ios),
+                  //       onPressed: () {
+                  //         Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  //           builder: (context) => FeedbackForm(),
+                  //         ));
+                  //       },
+                  //     ),
+                  //   ),
+                  // ),
+                  )
             ],
           ),
         ),

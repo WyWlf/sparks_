@@ -11,7 +11,7 @@ class _PagesBackgroundState extends State<PagesBackground> {
   @override
   Widget build(BuildContext context) {
     return ShaderMask(
-      shaderCallback: (bounds) => LinearGradient(
+      shaderCallback: (bounds) => const LinearGradient(
         colors: [
           Color.fromARGB(255, 237, 253, 236),
           Color.fromARGB(255, 194, 255, 191)
@@ -21,13 +21,11 @@ class _PagesBackgroundState extends State<PagesBackground> {
       ).createShader(bounds),
       blendMode: BlendMode.darken,
       child: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           image: DecorationImage(
-              image: AssetImage("images/pagesbg.png"), fit: BoxFit.cover
-              // ,
-              // colorFilter: ColorFilter.mode(
-              //Color.fromARGB(31, 0, 5, 2), BlendMode.overlay)
-              ),
+              colorFilter: ColorFilter.srgbToLinearGamma(),
+              image: AssetImage("images/pagesbg.png"),
+              fit: BoxFit.fill),
         ),
       ),
     );

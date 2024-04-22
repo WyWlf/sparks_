@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:sparks/widgets/pages.dart';
+import 'package:http/http.dart' as http;
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -9,87 +13,133 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-  int _currentFloor = 0;
-  late int _availableSlots;
+  int currentFloor = 0;
+  int availableSlots = 0;
+  late Map<String, dynamic> floors = {};
+  late List<dynamic> _floorImages = [];
+  bool loading = true;
+  void parkingSpaces() async {
+    final uri =
+        Uri.parse('https://young-cloud-49021.pktriot.net/api/getParkingFloors');
+    try {
+      final response = await http.get(uri);
+      var json = jsonDecode(response.body);
 
-  final List<String> _floorImages = [
-    'images/parking_map_floor_1.jpg',
-    'images/parking_map_floor_2.jpg',
-    'images/parking_map_floor_3.jpg',
-  ];
+      if (mounted && loading) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) => Center(
+            child: LoadingAnimationWidget.halfTriangleDot(
+                color: Colors.green, size: 40),
+          ),
+        );
+      }
+      setState(() {
+        floors = json;
+        try {
+          getImages();
+        } catch (e) {
+          print(e);
+        } finally {
+          Navigator.of(context).pop();
+        }
+      });
+    } catch (error) {
+      print(error);
+    }
+  }
+
+  void getImages() async {
+    final uri =
+        Uri.parse('https://young-cloud-49021.pktriot.net/api/getParkingImages');
+    final body = jsonEncode({'imageName': floors['sections']});
+    final headers = {'Content-Type': 'application/json'};
+    try {
+      final response = await http.post(uri, body: body, headers: headers);
+      var json = jsonDecode(response.body);
+      setState(() {
+        _floorImages = json['imageList'];
+      });
+    } catch (error) {
+      print(error);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    parkingSpaces();
+  }
+
+  @override
+  void dispose() {
+    // Cancel the timer when the widget is disposed
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    _availableSlots = _currentFloor == 1
-        ? 10
-        : _currentFloor == 2
-            ? 5
-            : 20;
+    print(floors);
+    if (floors.isNotEmpty) {
+      availableSlots =
+          floors['row'][0]['max_space'] - floors['row'][0]['used_space'];
+    }
 
     return Stack(
       children: [
-        PagesBackground(),
+        const PagesBackground(),
         Scaffold(
-          backgroundColor: Color.fromARGB(0, 255, 255, 255),
+          backgroundColor: const Color.fromARGB(0, 255, 255, 255),
           appBar: PreferredSize(
-            preferredSize: Size.fromHeight(130),
+            preferredSize: const Size.fromHeight(130),
             child: AppBar(
-              iconTheme: IconThemeData(color: Colors.white),
+              iconTheme: const IconThemeData(color: Colors.white),
               backgroundColor: Colors.transparent,
               elevation: 0,
               toolbarHeight: 80,
-              title: Text(
-                'Parking Map',
+              title: const Text(
+                'Parking Area',
                 style: TextStyle(
-                  fontSize: 30,
+                  fontSize: 25,
                   color: Colors.white,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
           ),
-          body: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                height: 50,
-                color: Colors.white.withOpacity(0.8),
-                child: Center(
-                  child: Text(
-                    'Available Slots: $_availableSlots',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
+          body: ListView.separated(
+              itemCount: _floorImages.length,
+              separatorBuilder: (context, index) => const Divider(
+                    thickness: 0,
                   ),
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  child: Image.asset(_floorImages[_currentFloor]),
-                ),
-              ),
-            ],
-          ),
+              itemBuilder: (_, index) {
+                return Column(
+                  children: [
+                    Text(
+                      floors['sections'][0]['section_name'],
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    Image.memory(base64Decode(_floorImages[index]))
+                  ],
+                );
+              }),
           bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _currentFloor,
-            onTap: (index) {
+            currentIndex: currentFloor,
+            onTap: (thisIdx) {
               setState(() {
-                _currentFloor = index;
+                currentFloor = thisIdx;
               });
             },
             items: [
               BottomNavigationBarItem(
                 icon: Icon(Icons.arrow_downward),
-                label: 'Floor 1',
+                label: 's',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.arrow_downward),
-                label: 'Floor 2',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.arrow_downward),
-                label: 'Floor 3',
+                label: 's',
               ),
             ],
           ),

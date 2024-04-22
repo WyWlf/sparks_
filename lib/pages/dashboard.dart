@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:sparks/api/access_token.dart';
 import 'package:sparks/main.dart';
 import 'package:sparks/pages/map.dart';
 import 'package:sparks/pages/notifications.dart';
@@ -22,6 +23,7 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   late Timer _timer;
+  late Timer _newTimer;
   String get token => widget.token;
   bool initialized = false;
   bool counter = false;
@@ -36,7 +38,6 @@ class _DashboardState extends State<Dashboard> {
     try {
       final response = await http.post(uri, body: body, headers: headers);
       var json = jsonDecode(response.body);
-      print(json);
       setState(() {
         if (json['resp'] == true) {
           parseJson = json;
@@ -69,8 +70,10 @@ class _DashboardState extends State<Dashboard> {
   void initState() {
     getTransaction();
     parkingSpaces();
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 15), (timer) {
       getTransaction();
+    });
+    _newTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       parkingSpaces();
     });
     super.initState();
@@ -81,6 +84,7 @@ class _DashboardState extends State<Dashboard> {
   void dispose() {
     // Cancel the timer when the widget is disposed
     _timer.cancel();
+    _newTimer.cancel();
     super.dispose();
   }
 
@@ -110,9 +114,9 @@ class _DashboardState extends State<Dashboard> {
         minutes = 0;
       }
       if (parkingJson.isNotEmpty) {
-        available = int.parse(parkingJson['row'][0]['max']) -
-            int.parse(parkingJson['row'][0]['used']);
-        used = int.parse(parkingJson['row'][0]['used']);
+        available = int.parse(parkingJson['spaces'][0]['max']) -
+            int.parse(parkingJson['spaces'][0]['used']);
+        used = int.parse(parkingJson['spaces'][0]['used']);
         total = available + used;
         availablePercent = (available / total) * 100;
         if (used > 0) {
@@ -193,7 +197,9 @@ class _DashboardState extends State<Dashboard> {
                       title: const Text('D A S H B O A R D'),
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => Dashboard(token: widget.token,),
+                          builder: (context) => Dashboard(
+                            token: widget.token,
+                          ),
                         ));
                       },
                     ),
@@ -229,14 +235,17 @@ class _DashboardState extends State<Dashboard> {
                       title: const Text('S E T T I N G S'),
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const Settings(),
+                          builder: (context) => Settings(
+                            token: widget.token,
+                          ),
                         ));
                       },
                     ),
                     ListTile(
                       leading: const Icon(Icons.logout),
                       title: const Text('L O G O U T'),
-                      onTap: () {
+                      onTap: () async {
+                        await AccessToken.storage.delete(key: 'token');
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => const HomePage(),
                         ));
@@ -295,7 +304,7 @@ class _DashboardState extends State<Dashboard> {
                                         padding: const EdgeInsets.fromLTRB(
                                             20, 15, 0, 0),
                                         child: const Text(
-                                          'Parked In:',
+                                          'Time Parked:',
                                           style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 12),
@@ -346,13 +355,16 @@ class _DashboardState extends State<Dashboard> {
                                 children: [
                                   const Padding(
                                       padding:
-                                          EdgeInsets.fromLTRB(0, 50, 0, 0)),
+                                          EdgeInsets.fromLTRB(0, 40, 0, 0)),
                                   const Text(
-                                    'Parking Fee:',
-                                    style: TextStyle(color: Colors.white),
+                                    'PARKING FEE',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20),
                                   ),
                                   Text(
-                                    'PHP. ' '$cost',
+                                    'PHP ' '$cost',
                                     style: const TextStyle(
                                         color: Colors.green, fontSize: 20),
                                   )
@@ -375,7 +387,7 @@ class _DashboardState extends State<Dashboard> {
                 width: MediaQuery.of(context).size.width,
                 color: const Color.fromARGB(255, 51, 51, 51),
                 child: const Text(
-                  'AVAILABLE PARKING SPACE',
+                  'PARKING SPACE INFORMATION',
                   textAlign: TextAlign.center,
                   style: AvPark,
                 ),
@@ -399,14 +411,14 @@ class _DashboardState extends State<Dashboard> {
                           titleStyle: const TextStyle(
                               color: Colors.black, fontWeight: FontWeight.bold),
                           showTitle: true,
-                          color: Colors.green),
+                          color: Colors.green.shade500),
                       PieChartSectionData(
                           value: usedPercent,
                           title: 'Used',
                           titleStyle: const TextStyle(
                               color: Colors.white, fontWeight: FontWeight.bold),
                           showTitle: true,
-                          color: Colors.red),
+                          color: Colors.red.shade500),
                     ]),
                   ),
                 ),
