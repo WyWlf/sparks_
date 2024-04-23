@@ -9,6 +9,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // import 'package:sparks/pages/feedbackform.dart';
 import 'package:http/http.dart' as http;
 import 'package:sparks/main.dart';
+import 'package:sparks/pages/dashboard.dart';
 import 'package:sparks/widgets/pages.dart';
 
 class Settings extends StatefulWidget {
@@ -89,11 +90,11 @@ class _SettingsState extends State<Settings> {
               );
 
               const storage = FlutterSecureStorage();
-              await storage.delete(key: 'token');
+              await storage.write(key: 'token', value: parseJson['token']);
 
               Timer(const Duration(seconds: 1), () {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const HomePage(),
+                  builder: (context) => Dashboard(token: parseJson['token']),
                 ));
               });
             }

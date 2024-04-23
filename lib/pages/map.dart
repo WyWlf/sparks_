@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:sparks/widgets/pages.dart';
 import 'package:http/http.dart' as http;
@@ -18,7 +19,11 @@ class _MapPageState extends State<MapPage> {
   late Map<String, dynamic> floors = {};
   late List<dynamic> _floorImages = [];
   bool loading = true;
+  List<NavigationItem> floorList = [];
   void parkingSpaces() async {
+    setState(() {
+      loading = true;
+    });
     final uri =
         Uri.parse('https://young-cloud-49021.pktriot.net/api/getParkingFloors');
     try {
@@ -37,29 +42,63 @@ class _MapPageState extends State<MapPage> {
       }
       setState(() {
         floors = json;
-        try {
-          getImages();
-        } catch (e) {
-          print(e);
-        } finally {
-          Navigator.of(context).pop();
-        }
+        populateFloorList();
+        getImages();
       });
     } catch (error) {
       print(error);
     }
   }
 
+  void populateFloorList() {
+    floorList = [];
+    List<dynamic> a = floors['row'];
+    List<dynamic> b = [];
+
+    for (var element in a) {
+      b.add(element['floor_name']);
+    }
+    for (var element in b) {
+      floorList.add(NavigationItem(icon: Icons.map, label: element));
+    }
+  }
+
+  Widget navBar() {
+    if (floorList.length >= 2) {
+      return BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: currentFloor,
+        onTap: (thisIdx) {
+          setState(() {
+            currentFloor = thisIdx;
+            parkingSpaces();
+          });
+        },
+        items: floorList.map((item) {
+          return BottomNavigationBarItem(
+              icon: Icon(item.icon), label: item.label);
+        }).toList(),
+      );
+    } else {
+      return const SizedBox();
+    }
+  }
+
   void getImages() async {
+    _floorImages = [];
     final uri =
         Uri.parse('https://young-cloud-49021.pktriot.net/api/getParkingImages');
-    final body = jsonEncode({'imageName': floors['sections']});
+    final body = jsonEncode({
+      'imageName': floors['sections'],
+      'id': floors['row'][currentFloor]['id']
+    });
     final headers = {'Content-Type': 'application/json'};
     try {
       final response = await http.post(uri, body: body, headers: headers);
       var json = jsonDecode(response.body);
       setState(() {
         _floorImages = json['imageList'];
+        loading = false;
       });
     } catch (error) {
       print(error);
@@ -68,8 +107,8 @@ class _MapPageState extends State<MapPage> {
 
   @override
   void initState() {
-    super.initState();
     parkingSpaces();
+    super.initState();
   }
 
   @override
@@ -80,10 +119,13 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
-    print(floors);
+    if (!loading) {
+      Navigator.of(context).pop();
+    }
+
     if (floors.isNotEmpty) {
-      availableSlots =
-          floors['row'][0]['max_space'] - floors['row'][0]['used_space'];
+      availableSlots = floors['row'][currentFloor]['max_space'] -
+          floors['row'][currentFloor]['used_space'];
     }
 
     return Stack(
@@ -108,43 +150,44 @@ class _MapPageState extends State<MapPage> {
               ),
             ),
           ),
-          body: ListView.separated(
-              itemCount: _floorImages.length,
-              separatorBuilder: (context, index) => const Divider(
-                    thickness: 0,
-                  ),
-              itemBuilder: (_, index) {
-                return Column(
-                  children: [
-                    Text(
-                      floors['sections'][0]['section_name'],
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    Image.memory(base64Decode(_floorImages[index]))
-                  ],
-                );
-              }),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: currentFloor,
-            onTap: (thisIdx) {
-              setState(() {
-                currentFloor = thisIdx;
-              });
-            },
-            items: [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.arrow_downward),
-                label: 's',
+          body: Column(
+            children: [
+              Text('Available slots: ' '$availableSlots',
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(
+                height: 30,
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.arrow_downward),
-                label: 's',
-              ),
+              Expanded(
+                  child: ListView.separated(
+                      itemCount: _floorImages.length,
+                      separatorBuilder: (context, index) => const SizedBox(
+                            height: 25,
+                          ),
+                      itemBuilder: (_, index) {
+                        return Column(
+                          children: [
+                            Text(
+                              'Section $index',
+                              style: const TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.bold),
+                            ),
+                            Image.memory(base64Decode(_floorImages[index]))
+                          ],
+                        );
+                      }))
             ],
           ),
+          bottomNavigationBar: navBar(),
         ),
       ],
     );
   }
+}
+
+class NavigationItem {
+  final IconData icon;
+  final String label;
+
+  NavigationItem({required this.icon, required this.label});
 }

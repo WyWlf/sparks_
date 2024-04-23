@@ -119,8 +119,10 @@ class _DashboardState extends State<Dashboard> {
         used = int.parse(parkingJson['spaces'][0]['used']);
         total = available + used;
         availablePercent = (available / total) * 100;
+        availablePercent = double.parse(availablePercent.toStringAsFixed(2));
         if (used > 0) {
           usedPercent = (used / total) * 100;
+          usedPercent =  double.parse(usedPercent.toStringAsFixed(2));
         }
       }
     }
@@ -185,7 +187,7 @@ class _DashboardState extends State<Dashboard> {
                       height: 20,
                     ),
                     const Text(
-                      'M E N U',
+                      'MENU',
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
@@ -194,7 +196,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                     ListTile(
                       leading: const Icon(Icons.home),
-                      title: const Text('D A S H B O A R D'),
+                      title: const Text('DASHBOARD'),
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => Dashboard(
@@ -205,7 +207,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                     ListTile(
                       leading: const Icon(Icons.notifications),
-                      title: const Text('N O T I F I C A T I O N S'),
+                      title: const Text('NOTIFICATIONS'),
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => const NotificationsPage(),
@@ -214,7 +216,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                     ListTile(
                       leading: const Icon(Icons.report),
-                      title: const Text('R E P O R T  F O R M'),
+                      title: const Text('REPORT FORM'),
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => const ReportPage(),
@@ -223,7 +225,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                     ListTile(
                       leading: const Icon(Icons.map),
-                      title: const Text('P A R K I N G   M A P'),
+                      title: const Text('PARKING MAP'),
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => const MapPage(),
@@ -232,7 +234,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                     ListTile(
                       leading: const Icon(Icons.settings),
-                      title: const Text('S E T T I N G S'),
+                      title: const Text('SETTINGS'),
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => Settings(
@@ -243,7 +245,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                     ListTile(
                       leading: const Icon(Icons.logout),
-                      title: const Text('L O G O U T'),
+                      title: const Text('LOGOUT'),
                       onTap: () async {
                         await AccessToken.storage.delete(key: 'token');
                         Navigator.of(context).push(MaterialPageRoute(
@@ -426,39 +428,45 @@ class _DashboardState extends State<Dashboard> {
               const SizedBox(height: 20),
 
               //summary of available parking space
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                      'Total Available Parking Space: $available ($availablePercent%)',
-                      style: sums),
-                  Text('Occupied Parking Space : $used ($usedPercent%)',
-                      style: sums),
-                  const SizedBox(
-                    height: 20,
+                  Flex(
+                    direction: Axis.vertical,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                          'Total Available Parking Space: $available ($availablePercent%)',
+                          style: sums),
+                      Text('Occupied Parking Space : $used ($usedPercent%)',
+                          style: sums),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      MaterialButton(
+                        minWidth: 150,
+                        height: 50,
+                        elevation: 10,
+                        padding: const EdgeInsets.all(5),
+                        color: Colors.green,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const MapPage()));
+                        },
+                        child: const Text(
+                          'View Parking Map',
+                          style: TextStyle(color: Colors.white, fontSize: 15),
+                        ),
+                      )
+                    ],
                   ),
-                  MaterialButton(
-                    minWidth: 150,
-                    height: 50,
-                    elevation: 10,
-                    padding: const EdgeInsets.all(5),
-                    color: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const MapPage()));
-                    },
-                    child: const Text(
-                      'View Parking Map',
-                      style: TextStyle(color: Colors.white, fontSize: 15),
-                    ),
-                  )
                 ],
-              ),
+              )
             ]),
           ),
         ],
