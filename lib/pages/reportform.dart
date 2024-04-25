@@ -27,12 +27,12 @@ class EncodedImages {
   }
 }
 
+bool _isFormVisible = false;
+List<File> _selectedImages = [];
+
 class _ReportPageState extends State<ReportPage> {
   TextEditingController plate = TextEditingController();
   TextEditingController description = TextEditingController();
-  bool _isFormVisible = false;
-  List<File> _selectedImages = [];
-
   void _pickImages() async {
     final imagePicker = ImagePicker();
     final List<XFile> images = await imagePicker.pickMultiImage();
@@ -45,8 +45,8 @@ class _ReportPageState extends State<ReportPage> {
       if (totalSize + imageSize <= 10 * 1024 * 1024) {
         setState(() {
           _selectedImages.add(file);
+          totalSize += imageSize;
         });
-        totalSize += imageSize;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -60,19 +60,18 @@ class _ReportPageState extends State<ReportPage> {
 
   void _submitForm() async {
     var localObj = [];
-    for (var i = 0; i < _selectedImages.length; i++) {
+    for (int i = 0; i < _selectedImages.length; i++) {
       try {
         List<int> imageBytes = await _selectedImages[i].readAsBytes();
         String base64image = base64Encode(imageBytes);
 
         // Upload image to ImgBB API
         var url = Uri.parse('https://api.imgbb.com/1/upload');
-        var headers = {'Content-Type': 'multipart/form-data'};
         var request = http.MultipartRequest(
           'POST',
           url,
         );
-        request.fields['key'] = '9a1831cc0674af49d4d08b72d378aaa8';
+        request.fields['key'] = 'c66e7ce9eea38f9483786e41cb5caaaf';
         request.files.add(http.MultipartFile.fromBytes(
           'image',
           imageBytes,
@@ -83,9 +82,7 @@ class _ReportPageState extends State<ReportPage> {
 
         if (response.statusCode == 200) {
           var data = jsonDecode(response.body);
-          if (data != null &&
-              data['data'] != null &&
-              data['data']['url'] != null) {
+          if (data['success'] && data['status'] == 200) {
             var imageUrl = data['data']['url'];
             localObj.add({'image': imageUrl});
           } else {
@@ -154,6 +151,209 @@ class _ReportPageState extends State<ReportPage> {
     }
   }
 
+  Widget _reportForm() {
+    return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+        decoration: BoxDecoration(
+            color: Colors.white, borderRadius: BorderRadius.circular(20)),
+        child: Column(
+          children: [
+            Text('Report Information',
+                textAlign: TextAlign.left,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+
+            //reported plate number
+            TextField(
+              controller: plate,
+              decoration: InputDecoration(
+                labelText: 'Plate number of the involved vehicle',
+              ),
+              onChanged: (value) =>
+                  {plate.text = value.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')},
+            ),
+
+            //concerns
+            TextField(
+              controller: description,
+              minLines: 1,
+              maxLines: 4,
+              keyboardType: TextInputType.multiline,
+              decoration: InputDecoration(
+                labelText: 'Describe the problem',
+              ),
+            ),
+
+            //upload evidences
+
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween, // added line
+
+                children: [
+                  Text('Submit Photo Evidences',
+                      style: TextStyle(fontSize: 15)),
+
+                  //UPLOAD EVIDENCE OPTIONS
+
+                  IconButton(
+                    icon: Icon(Icons.add_a_photo),
+                    onPressed: () async {
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              //OpenGallery
+                              ListTile(
+                                leading: Icon(Icons.photo),
+                                title: Text('Open Gallery'),
+                                onTap: () {
+                                  setState(() {
+                                    _pickImages();
+                                  });
+                                },
+                              ),
+
+                              // Open Camera
+                              ListTile(
+                                leading: Icon(Icons.camera),
+                                title: Text('Open Camera'),
+                                // onTap: () async {
+                                //   final images =
+                                //       await _captureImages();
+                                //   setState(() {
+                                //     if (images != null) {
+                                //       _selectedImages = images;
+                                //       _displayedImage = images[
+                                //           0]; // Display the first captured image
+                                //     }
+                                //   });
+                                // },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ]),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Wrap(
+                  // Wrap the images for row-based layout
+                  spacing: 10, // Adjust spacing between images
+                  runSpacing: 10, // Adjust spacing between rows
+                  children: _selectedImages.map((image) {
+                    return Stack(
+                      children: [
+                        SizedBox(
+                          height: 100,
+                          child: Image.file(image),
+                        ),
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.close,
+                              color: Colors.white,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _selectedImages.remove(image);
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+                Divider(color: Colors.black),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                //confirm
+                MaterialButton(
+                  height: 40,
+                  color: Color.fromARGB(255, 18, 229, 28),
+                  splashColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  elevation: 5,
+                  onPressed: () async {
+                    if (description.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Please enter a description')));
+                      return;
+                    }
+
+                    if (plate.text.isEmpty ||
+                        !RegExp(r"^[a-z0-9]+$").hasMatch(plate.text)) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                            'Invalid plate number! Please enter a valid alphanumeric plate number.'),
+                        backgroundColor: Colors.red,
+                        duration: const Duration(seconds: 3),
+                      ));
+                      return;
+                    }
+
+                    // Show loading indicator
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) => Center(
+                        child: LoadingAnimationWidget.halfTriangleDot(
+                            color: Colors.green, size: 40),
+                      ),
+                    );
+
+                    try {
+                      // Call your API upload function with appropriate error handling
+                      // final response =
+                      _submitForm();
+
+                      // Handle successful upload
+                      Navigator.pop(context); // Hide loading indicator
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Form uploaded successfully!')));
+                    } catch (error) {
+                      // Handle upload error
+                      Navigator.pop(context); // Hide loading indicator
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Error uploading form: $error')));
+                    }
+                  },
+                  child: Text('Submit '),
+                ),
+                //cancel button
+                MaterialButton(
+                  height: 40,
+                  color: Color.fromARGB(255, 247, 246, 246),
+                  splashColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  elevation: 5,
+                  onPressed: () {
+                    setState(() {
+                      _isFormVisible = false;
+                    });
+                  },
+                  child: Text('Cancel'),
+                ),
+              ],
+            ),
+          ],
+        ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -168,7 +368,7 @@ class _ReportPageState extends State<ReportPage> {
               backgroundColor: Colors.transparent,
               elevation: 0,
               title: const Text(
-                'Report Form',
+                'Reports',
                 style: TextStyle(
                   fontSize: 30,
                   color: Colors.white,
@@ -179,259 +379,19 @@ class _ReportPageState extends State<ReportPage> {
           //add new form
           floatingActionButton: FloatingActionButton(
             onPressed: () {
-              setState(() {
-                _isFormVisible = true;
-              });
+              if (!_isFormVisible) {
+                setState(() {
+                  _isFormVisible = !_isFormVisible;
+                });
+              }
             },
-            child: const Icon(Icons.add),
+            child: const Icon(
+              Icons.upload_file_sharp,
+              color: Colors.black,
+            ),
           ),
-
-          body: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setInnerState) {
-              return SingleChildScrollView(
-                child: Column(
-                  children: <Widget>[
-                    //FORM
-
-                    Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 30, vertical: 20),
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20)),
-                        child: Column(
-                          children: [
-                            Text('Report Information',
-                                textAlign: TextAlign.left,
-                                style: TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.bold)),
-
-                            //reported plate number
-                            TextField(
-                              controller: plate,
-                              decoration: InputDecoration(
-                                labelText:
-                                    'Plate number of the involved vehicle',
-                              ),
-                              onChanged: (value) => {
-                                plate.text = value.replaceAll(
-                                    RegExp(r'[^a-zA-Z0-9]'), '')
-                              },
-                            ),
-
-                            //concerns
-                            TextField(
-                              controller: description,
-                              maxLines: null,
-                              keyboardType: TextInputType.multiline,
-                              decoration: InputDecoration(
-                                labelText: 'Describe the problem',
-                              ),
-                            ),
-
-                            //upload evidences
-
-                            Row(
-                                mainAxisAlignment: MainAxisAlignment
-                                    .spaceBetween, // added line
-
-                                children: [
-                                  Text('Submit Photo Evidences',
-                                      style: TextStyle(fontSize: 15)),
-
-                                  //UPLOAD EVIDENCE OPTIONS
-
-                                  IconButton(
-                                    icon: Icon(Icons.add_a_photo),
-                                    onPressed: () async {
-                                      showModalBottomSheet(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: <Widget>[
-                                              //OpenGallery
-                                              ListTile(
-                                                leading: Icon(Icons.photo),
-                                                title: Text('Open Gallery'),
-                                                onTap: () {
-                                                  _pickImages();
-                                                  // setState(() {
-                                                  //   _selectedImages = images;
-                                                  // });
-                                                },
-                                              ),
-
-                                              // Open Camera
-                                              ListTile(
-                                                leading: Icon(Icons.camera),
-                                                title: Text('Open Camera'),
-                                                // onTap: () async {
-                                                //   final images =
-                                                //       await _captureImages();
-                                                //   setState(() {
-                                                //     if (images != null) {
-                                                //       _selectedImages = images;
-                                                //       _displayedImage = images[
-                                                //           0]; // Display the first captured image
-                                                //     }
-                                                //   });
-                                                // },
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ]),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Wrap(
-                                  // Wrap the images for row-based layout
-                                  spacing: 10, // Adjust spacing between images
-                                  runSpacing: 10, // Adjust spacing between rows
-                                  children: _selectedImages.map((image) {
-                                    return Stack(
-                                      children: [
-                                        SizedBox(
-                                          height: 100,
-                                          child: Image.file(image),
-                                        ),
-                                        Positioned(
-                                          top: 0,
-                                          right: 0,
-                                          child: IconButton(
-                                            icon: Icon(
-                                              Icons.close,
-                                              color: Colors.white,
-                                            ),
-                                            onPressed: () {
-                                              setState(() {
-                                                _selectedImages.remove(image);
-                                              });
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  }).toList(),
-                                ),
-                                Divider(color: Colors.black),
-                              ],
-                            ),
-
-                            SizedBox(
-                              height: 10,
-                            ),
-
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  //cancel button
-                                  MaterialButton(
-                                    height: 40,
-                                    color: Color.fromARGB(255, 247, 246, 246),
-                                    splashColor: Colors.red,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(50),
-                                    ),
-                                    elevation: 10,
-                                    onPressed: () {
-                                      setState(() {
-                                        _isFormVisible = false;
-                                        plate.clear();
-                                        description.clear();
-                                        _selectedImages = [];
-                                      });
-                                    },
-                                    child: Text('Cancel'),
-                                  ),
-                                  SizedBox(
-                                    width: 30,
-                                  ),
-
-                                  //confirm
-                                  MaterialButton(
-                                    height: 40,
-                                    color: Color.fromARGB(255, 18, 229, 28),
-                                    splashColor: Colors.red,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(50),
-                                    ),
-                                    elevation: 10,
-                                    onPressed: () async {
-                                      if (description.text.isEmpty) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                                content: Text(
-                                                    'Please enter a description')));
-                                        return;
-                                      }
-
-                                      if (plate.text.isEmpty ||
-                                          !RegExp(r"^[a-z0-9]+$")
-                                              .hasMatch(plate.text)) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                          content: Text(
-                                              'Invalid plate number! Please enter a valid alphanumeric plate number.'),
-                                          backgroundColor: Colors.red,
-                                          duration: const Duration(seconds: 3),
-                                        ));
-                                        return;
-                                      }
-
-                                      // Show loading indicator
-                                      showDialog(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (BuildContext context) =>
-                                            Center(
-                                          child: LoadingAnimationWidget
-                                              .halfTriangleDot(
-                                                  color: Colors.green,
-                                                  size: 40),
-                                        ),
-                                      );
-
-                                      try {
-                                        // Call your API upload function with appropriate error handling
-                                        final response = _submitForm();
-
-                                        // Handle successful upload
-                                        Navigator.pop(
-                                            context); // Hide loading indicator
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                                content: Text(
-                                                    'Form uploaded successfully!')));
-                                      } catch (error) {
-                                        // Handle upload error
-                                        Navigator.pop(
-                                            context); // Hide loading indicator
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                                content: Text(
-                                                    'Error uploading form: $error')));
-                                      }
-                                    },
-                                    child: Text('Confirm'),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ))
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
+          body: _isFormVisible ? _reportForm() : SizedBox(),
+        )
       ],
     );
   }

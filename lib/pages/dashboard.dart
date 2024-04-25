@@ -216,7 +216,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                     ListTile(
                       leading: const Icon(Icons.report),
-                      title: const Text('REPORT FORM'),
+                      title: const Text('REPORTS'),
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => const ReportPage(),
@@ -234,7 +234,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                     ListTile(
                       leading: const Icon(Icons.settings),
-                      title: const Text('SETTINGS'),
+                      title: const Text('ACCOUNT SETTINGS'),
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => Settings(
