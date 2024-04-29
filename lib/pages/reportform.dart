@@ -58,8 +58,9 @@ class _ReportPageState extends State<ReportPage> {
     }
   }
 
-  void _submitForm() async {
-    var localObj = [];
+  dynamic localObj = [];
+  bool uploadFail = false;
+  Future<void> _uploadIMGbb() async {
     for (int i = 0; i < _selectedImages.length; i++) {
       try {
         List<int> imageBytes = await _selectedImages[i].readAsBytes();
@@ -72,40 +73,57 @@ class _ReportPageState extends State<ReportPage> {
           url,
         );
         request.fields['key'] = 'c66e7ce9eea38f9483786e41cb5caaaf';
-        request.files.add(http.MultipartFile.fromBytes(
+        request.files.add(http.MultipartFile.fromString(
           'image',
-          imageBytes,
+          base64image,
         ));
 
         var streamedResponse = await request.send();
         final response = await http.Response.fromStream(streamedResponse);
-
-        if (response.statusCode == 200) {
-          var data = jsonDecode(response.body);
-          if (data['success'] && data['status'] == 200) {
-            var imageUrl = data['data']['url'];
-            localObj.add({'image': imageUrl});
-          } else {
-            // Handle ImgBB upload error
-            print('Error uploading image to ImgBB: $data');
+        var data = jsonDecode(response.body);
+        if (data['success'] && data['status'] == 200) {
+          var imageUrl = data['data']['url'];
+          localObj.add({'image': imageUrl});
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Image ${i + 1} Uploaded...'),
+                duration: Duration(milliseconds: 500),
+              ),
+            );
           }
         } else {
           // Handle error from ImgBB upload request
-          print('Error uploading image: Status code ${response.statusCode}');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                    'Upload failed. Error code: ${data['status']}. Image: ${i + 1}'),
+              ),
+            );
+          }
+          uploadFail = true;
+          break;
         }
       } catch (error) {
         // Handle errors reading image bytes or uploading to ImgBB
-        print('Error uploading image: $error');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Upload failed. Error code: $error'),
+            ),
+          );
+        }
       }
     }
-//data to be posted
+  }
+
+  Future<int> submitFullForm() async {
     var json = jsonEncode({
       'plate': plate.text,
       'description': description.text,
       'files': localObj,
     });
-
-    print('Test DATA POST: $json');
 
     final uri =
         Uri.parse('https://young-cloud-49021.pktriot.net/api/addReportForm');
@@ -116,30 +134,7 @@ class _ReportPageState extends State<ReportPage> {
       var client = http.Client();
       final response = await client.post(uri, body: body, headers: headers);
 
-      if (response.statusCode == 200) {
-        // Registration successful
-        // Clear registration form fields
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Report submitted.'),
-            ),
-          );
-        } else {
-          return;
-        }
-      } else {
-        // Handle network errors or exceptions
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('An error occurred. ${response.statusCode}'),
-            ),
-          );
-        } else {
-          return;
-        }
-      }
+      return response.statusCode;
     } catch (error) {
       // Handle network errors or exceptions
       ScaffoldMessenger.of(context).showSnackBar(
@@ -148,6 +143,7 @@ class _ReportPageState extends State<ReportPage> {
               'An error occurred. Please check your connection and try again.'),
         ),
       );
+      return 500;
     }
   }
 
@@ -317,12 +313,39 @@ class _ReportPageState extends State<ReportPage> {
                     try {
                       // Call your API upload function with appropriate error handling
                       // final response =
-                      _submitForm();
-
-                      // Handle successful upload
-                      Navigator.pop(context); // Hide loading indicator
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Form uploaded successfully!')));
+                      _uploadIMGbb().then((value) async {
+                        int response = await submitFullForm();
+                        if (response == 200) {
+                          setState(() {
+                            plate.clear();
+                            description.clear();
+                            localObj = [];
+                            uploadFail = true;
+                            _selectedImages = [];
+                            _isFormVisible = false;
+                          });
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Report uploaded successfully!'),
+                              ),
+                            );
+                          }
+                        } else {
+                          if (mounted) {
+                            localObj = [];
+                            uploadFail = true;
+                            _selectedImages = [];
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Report upload failed!. Please try again.'),
+                              ),
+                            );
+                          }
+                        }
+                        // Handle successful upload
+                        Navigator.pop(context); // Hide loading indicator
+                      });
                     } catch (error) {
                       // Handle upload error
                       Navigator.pop(context); // Hide loading indicator
