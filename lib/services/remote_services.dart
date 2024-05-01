@@ -8,7 +8,7 @@ class RemoteService {
   Future<List<Welcome>?> getPosts() async {
     try {
       final response = await _client.get(
-          Uri.parse('https://young-cloud-49021.pktriot.net/api/getLabels'));
+          Uri.parse('https://optimistic-grass-92004.pktriot.net/api/getLabels'));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

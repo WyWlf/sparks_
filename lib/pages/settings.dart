@@ -31,7 +31,7 @@ class _SettingsState extends State<Settings> {
   TextEditingController currPass = TextEditingController();
   final _formfield = GlobalKey<FormState>();
   void getUserInfo() async {
-    final uri = Uri.parse('https://young-cloud-49021.pktriot.net/api/userInfo');
+    final uri = Uri.parse('https://optimistic-grass-92004.pktriot.net/api/userInfo');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode({'token': token, 'onlyUsers': true});
     try {
@@ -64,7 +64,7 @@ class _SettingsState extends State<Settings> {
   void updateAccount() async {
     if (verifyForm()) {
       final uri =
-          Uri.parse('https://young-cloud-49021.pktriot.net/api/updateUserInfo');
+          Uri.parse('https://optimistic-grass-92004.pktriot.net/api/updateUserInfo');
       final headers = {'Content-Type': 'application/json'};
       final body = jsonEncode({
         'token': token,

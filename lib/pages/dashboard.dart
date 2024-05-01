@@ -32,7 +32,7 @@ class _DashboardState extends State<Dashboard> {
 
   void getTransaction() async {
     final uri = Uri.parse(
-        'https://young-cloud-49021.pktriot.net/api/getUserTransaction');
+        'https://optimistic-grass-92004.pktriot.net/api/getUserTransaction');
     final body = jsonEncode({'token': token});
     final headers = {'Content-Type': 'application/json'};
     try {
@@ -54,7 +54,7 @@ class _DashboardState extends State<Dashboard> {
 
   void parkingSpaces() async {
     final uri =
-        Uri.parse('https://young-cloud-49021.pktriot.net/api/getParkingFloors');
+        Uri.parse('https://optimistic-grass-92004.pktriot.net/api/getParkingFloors');
     try {
       final response = await http.get(uri);
       var json = jsonDecode(response.body);

@@ -70,7 +70,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _verifyToken() async {
     final uri =
-        Uri.parse('https://young-cloud-49021.pktriot.net/api/tokenVerifier');
+        Uri.parse('https://optimistic-grass-92004.pktriot.net/api/tokenVerifier');
     final body = jsonEncode({'token': token});
     final headers = {'Content-Type': 'application/json'};
     try {
