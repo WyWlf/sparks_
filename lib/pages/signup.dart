@@ -2,7 +2,6 @@
 
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -85,8 +84,8 @@ class _SignPageState extends State<SignPage> {
       'password': newpass.text,
       'role': 1
     });
-    final uri =
-        Uri.parse('https://optimistic-grass-92004.pktriot.net/api/addClientUsers');
+    final uri = Uri.parse(
+        'https://optimistic-grass-92004.pktriot.net/api/addClientUsers');
     final body = json;
     final headers = {'Content-Type': 'application/json'};
 
@@ -105,29 +104,35 @@ class _SignPageState extends State<SignPage> {
         confirmpass.clear();
 
         // Navigate to the Dashboard screen, replacing the current screen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const Dashboard(
-              token: '',
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const Dashboard(
+                token: '',
+              ),
             ),
-          ),
-        );
+          );
+        }
       } else {
         // Handle network errors or exceptions
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('An error occurred. ${response.statusCode}'),
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('An error occurred. ${response.statusCode}'),
+            ),
+          );
+        }
       }
     } catch (error) {
       // Handle network errors or exceptions
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              'An error occurred. Please check your connection and try again.'),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'An error occurred. Please check your connection and try again.'),
+          ),
+        );
+      }
     }
   }
 

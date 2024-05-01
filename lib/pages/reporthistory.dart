@@ -12,19 +12,19 @@ class _ReportHistoryState extends State<ReportHistory> {
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
-      PagesBackground(),
+      const PagesBackground(),
       Scaffold(
-          backgroundColor: Color.fromARGB(0, 255, 255, 255),
+          backgroundColor: const Color.fromARGB(0, 255, 255, 255),
           appBar: PreferredSize(
-            preferredSize: Size.fromHeight(130),
+            preferredSize: const Size.fromHeight(130),
 
             //SPARKS
             child: AppBar(
-              iconTheme: IconThemeData(color: Colors.white),
+              iconTheme: const IconThemeData(color: Colors.white),
               backgroundColor: Colors.transparent,
               elevation: 0,
               toolbarHeight: 80,
-              title: Text(
+              title: const Text(
                 'History',
                 style: TextStyle(
                   fontSize: 30,
@@ -33,13 +33,12 @@ class _ReportHistoryState extends State<ReportHistory> {
               ),
             ),
           ),
-          body: Center(
+          body: const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [Text("NO COMPLIANT HISTORY")],
             ),
           ))
     ]);
-    ;
   }
 }

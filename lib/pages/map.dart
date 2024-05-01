@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:sparks/widgets/pages.dart';
 import 'package:http/http.dart' as http;
