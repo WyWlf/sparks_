@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 Welcome welcomeFromJson(String str) => Welcome.fromJson(json.decode(str));
 
