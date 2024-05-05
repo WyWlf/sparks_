@@ -5,7 +5,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:sparks/api/local_auth_service.dart';
 import 'package:sparks/pages/dashboard.dart';
 import 'package:sparks/pages/signup.dart';
 import 'package:sparks/widgets/decoration.dart';
@@ -15,6 +14,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
@@ -160,46 +161,46 @@ class _LoginPageState extends State<LoginPage> {
                                   child: Text('Login', style: buttons))),
                           SizedBox(height: 10),
 
-                          //space
-                          Row(children: <Widget>[
-                            Expanded(
-                                child: Divider(
-                              color: Colors.black54,
-                            )),
-                            Text("   OR   "),
-                            Expanded(
-                                child: Divider(
-                              color: Colors.black54,
-                            )),
-                          ]),
+                          // //space
+                          // Row(children: <Widget>[
+                          //   Expanded(
+                          //       child: Divider(
+                          //     color: Colors.black54,
+                          //   )),
+                          //   Text("   OR   "),
+                          //   Expanded(
+                          //       child: Divider(
+                          //     color: Colors.black54,
+                          //   )),
+                          // ]),
                           SizedBox(
                             height: 10,
                           ),
                           //biometrics
-                          SizedBox(
-                            width: 150,
-                            height: 50,
-                            child: ElevatedButton.icon(
-                              onPressed: () async {
-                                final authenticate =
-                                    await LocalAuth.authenticate();
-                                setState(() {
-                                  authenticated = authenticate;
-                                });
-                                if (authenticated) {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => Dashboard(
-                                                token: '',
-                                              )));
-                                }
-                              },
-                              icon: Icon(Icons.fingerprint),
-                              label: Text('Biometrics'),
-                            ),
-                          ),
-                          //space
+                          // SizedBox(
+                          //   width: 150,
+                          //   height: 50,
+                          //   child: ElevatedButton.icon(
+                          //     onPressed: () async {
+                          //       final authenticate =
+                          //           await LocalAuth.authenticate();
+                          //       setState(() {
+                          //         authenticated = authenticate;
+                          //       });
+                          //       if (authenticated) {
+                          //         Navigator.push(
+                          //             context,
+                          //             MaterialPageRoute(
+                          //                 builder: (context) => Dashboard(
+                          //                       token: '',
+                          //                     )));
+                          //       }
+                          //     },
+                          //     icon: Icon(Icons.fingerprint),
+                          //     label: Text('Biometrics'),
+                          //   ),
+                          // ),
+                          // //space
                           SizedBox(
                             height: 20,
                           ),
@@ -251,7 +252,7 @@ class _LoginPageState extends State<LoginPage> {
   void _loginUser() async {
     final loginModel =
         LoginModel(plate: plate.text, password: password.text, onlyUser: true);
-    final uri = Uri.parse('https://optimistic-grass-92004.pktriot.net/api/login');
+    final uri = Uri.parse('http://192.168.254.104:5173/api/login');
     final body = jsonEncode(loginModel.toJson());
     final headers = {'Content-Type': 'application/json'};
     try {

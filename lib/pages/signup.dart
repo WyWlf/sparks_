@@ -6,7 +6,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:sparks/pages/dashboard.dart';
 import 'package:sparks/pages/login.dart';
 import 'package:sparks/widgets/decoration.dart';
 import 'package:sparks/widgets/widget.dart';
@@ -39,26 +38,12 @@ class RegisterModel {
       password: json['password'],
     );
   }
-
-  // Map<String, dynamic> toJson() {
-  //   return {
-  //     'nickname': nickname,
-  //     'plate': plate,
-  //     'email': email,
-  //     'password': password,
-  //   };
-  // }
 }
 
 void main() async {}
 
 class _SignPageState extends State<SignPage> {
   final _formfield = GlobalKey<FormState>();
-  // final nickname = TextEditingController();
-  // final plate = TextEditingController();
-  // final email = TextEditingController();
-  // final newpass = TextEditingController();
-  // final confirmpass = TextEditingController();
   TextEditingController nickname = TextEditingController();
   TextEditingController plate = TextEditingController();
   TextEditingController email = TextEditingController();
@@ -84,16 +69,15 @@ class _SignPageState extends State<SignPage> {
       'password': newpass.text,
       'role': 1
     });
-    final uri = Uri.parse(
-        'https://optimistic-grass-92004.pktriot.net/api/addClientUsers');
+    final uri = Uri.parse('http://192.168.254.104:5173/api/addClientUsers');
     final body = json;
     final headers = {'Content-Type': 'application/json'};
 
     try {
       var client = http.Client();
       final response = await client.post(uri, body: body, headers: headers);
-
-      if (response.statusCode == 200) {
+      var json = jsonDecode(response.body);
+      if (json['response']) {
         // Registration successful
         // Clear registration form fields
 
@@ -107,9 +91,7 @@ class _SignPageState extends State<SignPage> {
         if (mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => const Dashboard(
-                token: '',
-              ),
+              builder: (context) => LoginPage(),
             ),
           );
         }
@@ -118,9 +100,10 @@ class _SignPageState extends State<SignPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('An error occurred. ${response.statusCode}'),
+              content: Text('${json['msg']}'),
             ),
           );
+          Navigator.pop(context);
         }
       }
     } catch (error) {
@@ -132,6 +115,7 @@ class _SignPageState extends State<SignPage> {
                 'An error occurred. Please check your connection and try again.'),
           ),
         );
+        Navigator.pop(context);
       }
     }
   }
@@ -212,7 +196,7 @@ class _SignPageState extends State<SignPage> {
                                   return "Enter Plate Number";
                                 }
                                 bool plateNumber =
-                                    RegExp(r"^[a-z0-9]").hasMatch(value);
+                                    RegExp(r"^[a-zA-Z0-9]").hasMatch(value);
                                 if (!plateNumber) {
                                   return "Please enter valid Plate Number(ABC123)";
                                 }

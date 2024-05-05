@@ -69,14 +69,21 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _verifyToken() async {
-    final uri =
-        Uri.parse('https://optimistic-grass-92004.pktriot.net/api/tokenVerifier');
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => Center(
+        child: LoadingAnimationWidget.halfTriangleDot(
+            color: Colors.green, size: 40),
+      ),
+    );
+    final uri = Uri.parse('http://192.168.254.104:5173/api/tokenVerifier');
     final body = jsonEncode({'token': token});
     final headers = {'Content-Type': 'application/json'};
     try {
       final response = await http.post(uri, body: body, headers: headers);
       var json = jsonDecode(response.body);
-
+      Navigator.pop(context);
       if (json['resp']) {
         if (mounted) {
           Navigator.push(
@@ -141,14 +148,6 @@ class _HomePageState extends State<HomePage> {
                           splashColor: Color.fromARGB(255, 178, 255, 174),
                           elevation: 10,
                           onPressed: () async {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (BuildContext context) => Center(
-                                child: LoadingAnimationWidget.halfTriangleDot(
-                                    color: Colors.green, size: 40),
-                              ),
-                            );
                             await _verifyToken();
                           },
                           color: Color.fromARGB(255, 255, 255, 255),

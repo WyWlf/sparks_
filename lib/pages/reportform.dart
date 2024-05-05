@@ -4,7 +4,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:sparks/pages/login.dart';
 import 'package:sparks/widgets/pages.dart';
 import 'package:http/http.dart' as http;
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -31,8 +34,19 @@ bool _isFormVisible = false;
 List<File> _selectedImages = [];
 
 class _ReportPageState extends State<ReportPage> {
+  late String token;
+  late dynamic userRepList = [];
+  dynamic localObj = [];
+  bool uploadFail = false;
   TextEditingController plate = TextEditingController();
   TextEditingController description = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadToken();
+  }
+
   void _pickImages() async {
     final imagePicker = ImagePicker();
     final List<XFile> images = await imagePicker.pickMultiImage();
@@ -58,8 +72,6 @@ class _ReportPageState extends State<ReportPage> {
     }
   }
 
-  dynamic localObj = [];
-  bool uploadFail = false;
   Future<void> _uploadIMGbb() async {
     for (int i = 0; i < _selectedImages.length; i++) {
       try {
@@ -118,15 +130,61 @@ class _ReportPageState extends State<ReportPage> {
     }
   }
 
+  Future<void> _loadToken() async {
+    final storage = FlutterSecureStorage();
+    String? retrievedToken = await storage.read(key: 'token');
+    if (retrievedToken != null) {
+      setState(() {
+        token = retrievedToken;
+      });
+      await getReportList();
+    } else {
+      setState(() {
+        if (mounted) {
+          Navigator.push(
+            context,
+            PageTransition(child: LoginPage(), type: PageTransitionType.fade),
+          );
+        }
+      });
+    }
+  }
+
+  Future<dynamic> getReportList() async {
+    var json = jsonEncode({
+      'token': token,
+    });
+    final body = json;
+    final headers = {'Content-Type': 'application/json'};
+    final uri = Uri.parse('http://192.168.254.104:5173/api/getUserReportList');
+    try {
+      var client = http.Client();
+      final response = await client.post(uri, body: body, headers: headers);
+      dynamic reportList = jsonDecode(response.body);
+      setState(() {
+        userRepList = reportList['row'];
+      });
+    } catch (error) {
+      // Handle network errors or exceptions
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'An error occurred. Please check your connection and try again.'),
+        ),
+      );
+      return 500;
+    }
+  }
+
   Future<int> submitFullForm() async {
     var json = jsonEncode({
+      'token': token,
       'plate': plate.text,
       'description': description.text,
       'files': localObj,
     });
 
-    final uri =
-        Uri.parse('https://optimistic-grass-92004.pktriot.net/api/addReportForm');
+    final uri = Uri.parse('http://192.168.254.104:5173/api/addReportForm');
     final body = json;
     final headers = {'Content-Type': 'application/json'};
 
@@ -290,7 +348,7 @@ class _ReportPageState extends State<ReportPage> {
                     }
 
                     if (plate.text.isEmpty ||
-                        !RegExp(r"^[a-z0-9]+$").hasMatch(plate.text)) {
+                        !RegExp(r"^[a-zA-Z0-9]+$").hasMatch(plate.text)) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text(
                             'Invalid plate number! Please enter a valid alphanumeric plate number.'),
@@ -316,6 +374,7 @@ class _ReportPageState extends State<ReportPage> {
                       _uploadIMGbb().then((value) async {
                         int response = await submitFullForm();
                         if (response == 200) {
+                          await _loadToken();
                           setState(() {
                             plate.clear();
                             description.clear();
@@ -338,7 +397,8 @@ class _ReportPageState extends State<ReportPage> {
                             _selectedImages = [];
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Report upload failed!. Please try again.'),
+                                content: Text(
+                                    'Report upload failed!. Please try again.'),
                               ),
                             );
                           }
@@ -377,6 +437,80 @@ class _ReportPageState extends State<ReportPage> {
         ));
   }
 
+  Widget _reportList() {
+    return Column(children: [
+      Expanded(
+          child: ListView.separated(
+              itemCount: userRepList.length,
+              separatorBuilder: (context, index) => const SizedBox(
+                    height: 0,
+                  ),
+              itemBuilder: (_, index) {
+                String reportDescription =
+                    userRepList[index]['description'].length > 30
+                        ? userRepList[index]['description'].substring(0, 30) +
+                            '.....'
+                        : userRepList[index]['description'];
+                  dynamic evidence = userRepList[index]['evidences'];
+                  int numOfEvidence = jsonDecode(evidence).length;
+                return Column(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border(bottom: BorderSide(color: Colors.black)),
+                        color: Colors.white,
+                      ),
+                      height: 80,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          SizedBox(
+                            width: 10,
+                          ),
+                          const Icon(
+                            size: 40,
+                            Icons.file_copy_rounded,
+                            color: Colors.black,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  userRepList[index]['plate'],
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                      color: const Color.fromARGB(
+                                          255, 17, 115, 196)),
+                                ),
+                                Text(reportDescription),
+                                Text('$numOfEvidence submitted images', style: TextStyle(fontSize: 12),)
+                              ],
+                            ),
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(userRepList[index]['date']),
+                              Text(userRepList[index]['hour'])
+                            ],
+                          ),
+                          SizedBox(width: 10,)
+                        ],
+                      ),
+                    )
+                  ],
+                );
+              }))
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -413,7 +547,7 @@ class _ReportPageState extends State<ReportPage> {
               color: Colors.black,
             ),
           ),
-          body: _isFormVisible ? _reportForm() : SizedBox(),
+          body: _isFormVisible ? _reportForm() : _reportList(),
         )
       ],
     );

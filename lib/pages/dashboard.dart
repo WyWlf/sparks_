@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:sparks/api/access_token.dart';
 import 'package:sparks/main.dart';
 import 'package:sparks/pages/map.dart';
@@ -24,15 +25,17 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   late Timer _timer;
   late Timer _newTimer;
+  String openingTime = '';
+  String closingTime = '';
   String get token => widget.token;
   bool initialized = false;
   bool counter = false;
   var parseJson = {};
   var parkingJson = {};
+  var config = {};
 
   void getTransaction() async {
-    final uri = Uri.parse(
-        'https://optimistic-grass-92004.pktriot.net/api/getUserTransaction');
+    final uri = Uri.parse('http://192.168.254.104:5173/api/getUserTransaction');
     final body = jsonEncode({'token': token});
     final headers = {'Content-Type': 'application/json'};
     try {
@@ -53,8 +56,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void parkingSpaces() async {
-    final uri =
-        Uri.parse('https://optimistic-grass-92004.pktriot.net/api/getParkingFloors');
+    final uri = Uri.parse('http://192.168.254.104:5173/api/getParkingFloors');
     try {
       final response = await http.get(uri);
       var json = jsonDecode(response.body);
@@ -66,10 +68,34 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
+  String convertTo12HourFormat(String time) {
+    final DateFormat formatter = DateFormat('hh:mm a');
+    final DateTime dateTime = DateFormat('HH:mm').parse(time);
+    return formatter.format(dateTime);
+  }
+
+  void getConfig() async {
+    final uri = Uri.parse('http://192.168.254.104:5173/api/getConfiguration');
+    try {
+      final response = await http.get(uri);
+      var json = jsonDecode(response.body);
+      setState(() {
+        config = jsonDecode(json['row'][0]['settings']);
+        openingTime = config['openingTime'];
+        closingTime = config['closingTime'];
+      });
+      print(config);
+    } catch (error) {
+      print(error);
+    }
+  }
+
   @override
   void initState() {
+    getConfig();
     getTransaction();
     parkingSpaces();
+
     _timer = Timer.periodic(const Duration(seconds: 15), (timer) {
       getTransaction();
     });
@@ -122,7 +148,7 @@ class _DashboardState extends State<Dashboard> {
         availablePercent = double.parse(availablePercent.toStringAsFixed(2));
         if (used > 0) {
           usedPercent = (used / total) * 100;
-          usedPercent =  double.parse(usedPercent.toStringAsFixed(2));
+          usedPercent = double.parse(usedPercent.toStringAsFixed(2));
         }
       }
     }
@@ -264,7 +290,7 @@ class _DashboardState extends State<Dashboard> {
                 alignment: Alignment.topCenter,
                 children: [
                   Container(
-                    height: 200,
+                    height: 240,
                     width: 370,
                     color: Colors.white,
                     child: Container(
@@ -290,10 +316,65 @@ class _DashboardState extends State<Dashboard> {
                             ),
                           ),
                           // receipt
+                          const SizedBox(
+                            height: 10,
+                          ),
                           Flex(
                             direction: Axis.vertical,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(31, 0, 0, 0),
+                                    child: Column(
+                                      children: [
+                                        const Text(
+                                          'Opening Time:',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          openingTime.isEmpty
+                                              ? 'Loading...'
+                                              : convertTo12HourFormat(
+                                                  openingTime),
+                                          style: const TextStyle(
+                                              color: Colors.blue,
+                                              fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(0, 0, 40, 0),
+                                    child: Column(
+                                      children: [
+                                        const Text(
+                                          'Closing Time:',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          openingTime.isEmpty
+                                              ? 'Loading...'
+                                              : convertTo12HourFormat(
+                                                  closingTime),
+                                          style: const TextStyle(
+                                              color: Colors.red,
+                                              fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                               Flex(
                                 direction: Axis.horizontal,
                                 mainAxisAlignment:
@@ -380,7 +461,7 @@ class _DashboardState extends State<Dashboard> {
                   ),
                 ],
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 70),
 
               //title AVAILABLE PARKING SPACE
               Container(

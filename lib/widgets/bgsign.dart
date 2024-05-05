@@ -6,7 +6,7 @@ class BackgroundSign extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ShaderMask(
-      shaderCallback: (bounds) => LinearGradient(
+      shaderCallback: (bounds) => const LinearGradient(
         colors: [
           Color.fromARGB(255, 237, 253, 236),
           Color.fromARGB(255, 194, 255, 191)
@@ -16,7 +16,7 @@ class BackgroundSign extends StatelessWidget {
       ).createShader(bounds),
       blendMode: BlendMode.darken,
       child: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           image: DecorationImage(
               image: AssetImage("images/main.png"), fit: BoxFit.cover
               // ,

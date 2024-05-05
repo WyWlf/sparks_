@@ -24,7 +24,7 @@ class _MapPageState extends State<MapPage> {
       loading = true;
     });
     final uri =
-        Uri.parse('https://optimistic-grass-92004.pktriot.net/api/getParkingFloors');
+        Uri.parse('http://192.168.254.104:5173/api/getParkingFloors');
     try {
       final response = await http.get(uri);
       var json = jsonDecode(response.body);
@@ -86,7 +86,7 @@ class _MapPageState extends State<MapPage> {
   void getImages() async {
     _floorImages = [];
     final uri =
-        Uri.parse('https://optimistic-grass-92004.pktriot.net/api/getParkingImages');
+        Uri.parse('http://192.168.254.104:5173/api/getParkingImages');
     final body = jsonEncode({
       'imageName': floors['sections'],
       'id': floors['row'][currentFloor]['id']
@@ -164,10 +164,11 @@ class _MapPageState extends State<MapPage> {
                             height: 25,
                           ),
                       itemBuilder: (_, index) {
+                        int count = index+1;
                         return Column(
                           children: [
                             Text(
-                              'Section $index',
+                              'Section $count',
                               style: const TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.bold),
                             ),
