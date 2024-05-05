@@ -351,7 +351,7 @@ class _DashboardState extends State<Dashboard> {
                                   ),
                                   Container(
                                     padding:
-                                        const EdgeInsets.fromLTRB(0, 0, 40, 0),
+                                        const EdgeInsets.fromLTRB(0, 0, 31, 0),
                                     child: Column(
                                       children: [
                                         const Text(
@@ -412,7 +412,7 @@ class _DashboardState extends State<Dashboard> {
                                         padding: const EdgeInsets.fromLTRB(
                                             0, 15, 20, 0),
                                         child: const Text(
-                                          'Total Parking Time:',
+                                          'Park Time:',
                                           style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 12),
