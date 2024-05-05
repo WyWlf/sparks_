@@ -35,7 +35,7 @@ class _GuestModeState extends State<GuestMode> {
   }
 
   void parkingSpaces() async {
-    final uri = Uri.parse('http://192.168.254.104:5173/api/getParkingFloors');
+    final uri = Uri.parse('http://192.168.1.10:5173/api/getParkingFloors');
     try {
       final response = await http.get(uri);
       var json = jsonDecode(response.body);

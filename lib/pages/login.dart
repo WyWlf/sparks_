@@ -252,7 +252,7 @@ class _LoginPageState extends State<LoginPage> {
   void _loginUser() async {
     final loginModel =
         LoginModel(plate: plate.text, password: password.text, onlyUser: true);
-    final uri = Uri.parse('http://192.168.254.104:5173/api/login');
+    final uri = Uri.parse('http://192.168.1.10:5173/api/login');
     final body = jsonEncode(loginModel.toJson());
     final headers = {'Content-Type': 'application/json'};
     try {

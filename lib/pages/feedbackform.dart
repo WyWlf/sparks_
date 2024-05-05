@@ -117,7 +117,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
                       // Send a POST request to the API with the feedback data
                       var response = await http.post(
                         Uri.parse(
-                            'http://192.168.254.104:5173/api/addReportForm'),
+                            'http://192.168.1.10:5173/api/addReportForm'),
                         headers: {
                           'Content-Type': 'application/json; charset=UTF-8',
                         },

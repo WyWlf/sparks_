@@ -77,7 +77,7 @@ class _HomePageState extends State<HomePage> {
             color: Colors.green, size: 40),
       ),
     );
-    final uri = Uri.parse('http://192.168.254.104:5173/api/tokenVerifier');
+    final uri = Uri.parse('http://192.168.1.10:5173/api/tokenVerifier');
     final body = jsonEncode({'token': token});
     final headers = {'Content-Type': 'application/json'};
     try {
