@@ -23,8 +23,7 @@ class _MapPageState extends State<MapPage> {
     setState(() {
       loading = true;
     });
-    final uri =
-        Uri.parse('http://192.168.1.10:5173/api/getParkingFloors');
+    final uri = Uri.parse('http://192.168.254.104:5173/api/getParkingFloors');
     try {
       final response = await http.get(uri);
       var json = jsonDecode(response.body);
@@ -85,8 +84,7 @@ class _MapPageState extends State<MapPage> {
 
   void getImages() async {
     _floorImages = [];
-    final uri =
-        Uri.parse('http://192.168.1.10:5173/api/getParkingImages');
+    final uri = Uri.parse('http://192.168.254.104:5173/api/getParkingImages');
     final body = jsonEncode({
       'imageName': floors['sections'],
       'id': floors['row'][currentFloor]['id']
@@ -123,8 +121,8 @@ class _MapPageState extends State<MapPage> {
     }
 
     if (floors.isNotEmpty) {
-      availableSlots = floors['row'][currentFloor]['max_space'] -
-          floors['row'][currentFloor]['used_space'];
+      availableSlots = int.parse(floors['floorInfo'][currentFloor]['max_space']) -
+          int.parse(floors['floorInfo'][currentFloor]['used_space']);
     }
 
     return Stack(
@@ -164,15 +162,29 @@ class _MapPageState extends State<MapPage> {
                             height: 25,
                           ),
                       itemBuilder: (_, index) {
-                        int count = index+1;
-                        return Column(
+                        return Column(                       
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Section $count',
+                              'Section: ${_floorImages[index]['data'][index]['section_name']}',
                               style: const TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.bold),
                             ),
-                            Image.memory(base64Decode(_floorImages[index]))
+                            Text(
+                              'Available space: ${_floorImages[index]['data'][index]['label_count'] - _floorImages[index]['data'][index]['label_used']}',
+                              style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color.fromARGB(255, 9, 117, 12)),
+                            ),
+                            Text(
+                              'Used space: ${_floorImages[index]['data'][index]['label_used']}',
+                              style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.red),
+                            ),
+                            Image.memory(base64Decode(_floorImages[index]['img']))
                           ],
                         );
                       }))

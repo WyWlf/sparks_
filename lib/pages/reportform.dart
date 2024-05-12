@@ -156,7 +156,7 @@ class _ReportPageState extends State<ReportPage> {
     });
     final body = json;
     final headers = {'Content-Type': 'application/json'};
-    final uri = Uri.parse('http://192.168.1.10:5173/api/getUserReportList');
+    final uri = Uri.parse('http://192.168.254.104:5173/api/getUserReportList');
     try {
       var client = http.Client();
       final response = await client.post(uri, body: body, headers: headers);
@@ -184,7 +184,7 @@ class _ReportPageState extends State<ReportPage> {
       'files': localObj,
     });
 
-    final uri = Uri.parse('http://192.168.1.10:5173/api/addReportForm');
+    final uri = Uri.parse('http://192.168.254.104:5173/api/addReportForm');
     final body = json;
     final headers = {'Content-Type': 'application/json'};
 
