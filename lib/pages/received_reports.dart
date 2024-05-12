@@ -198,7 +198,7 @@ class _ReceivedReportState extends State<ReceivedReports> {
         Scaffold(
             backgroundColor: Color.fromARGB(0, 255, 255, 255),
             appBar: PreferredSize(
-              preferredSize: Size.fromHeight(130),
+              preferredSize: Size.fromHeight(150),
               child: AppBar(
                 iconTheme: IconThemeData(color: Colors.white),
                 backgroundColor: Colors.transparent,

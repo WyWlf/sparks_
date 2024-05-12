@@ -50,7 +50,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
       Scaffold(
         backgroundColor: const Color.fromARGB(0, 255, 255, 255),
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(130),
+          preferredSize: const Size.fromHeight(150),
 
           //SPARKS
           child: AppBar(
