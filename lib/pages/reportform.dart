@@ -8,6 +8,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sparks/pages/login.dart';
+import 'package:sparks/pages/report_overview.dart';
 import 'package:sparks/widgets/pages.dart';
 import 'package:http/http.dart' as http;
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -166,12 +167,14 @@ class _ReportPageState extends State<ReportPage> {
       });
     } catch (error) {
       // Handle network errors or exceptions
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              'An error occurred. Please check your connection and try again.'),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'An error occurred. Please check your connection and try again.'),
+          ),
+        );
+      }
       return 500;
     }
   }
@@ -451,61 +454,77 @@ class _ReportPageState extends State<ReportPage> {
                         ? userRepList[index]['description'].substring(0, 30) +
                             '.....'
                         : userRepList[index]['description'];
-                  dynamic evidence = userRepList[index]['evidences'];
-                  int numOfEvidence = jsonDecode(evidence).length;
-                return Column(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border(bottom: BorderSide(color: Colors.black)),
-                        color: Colors.white,
-                      ),
-                      height: 80,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          SizedBox(
-                            width: 10,
-                          ),
-                          const Icon(
-                            size: 40,
-                            Icons.file_copy_rounded,
-                            color: Colors.black,
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Column(
+                dynamic evidence = userRepList[index]['evidences'];
+                int numOfEvidence = jsonDecode(evidence).length;
+                return InkWell(
+                  onTap: () => {
+                    Navigator.push(
+                      context,
+                      PageTransition(
+                          child: ReportOverview(report: userRepList[index],),
+                          type: PageTransitionType.fade),
+                    )
+                  },
+                  child: Column(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          border:
+                              Border(bottom: BorderSide(color: Colors.black)),
+                          color: Colors.white,
+                        ),
+                        height: 80,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            SizedBox(
+                              width: 10,
+                            ),
+                            const Icon(
+                              size: 40,
+                              Icons.file_copy_rounded,
+                              color: Colors.black,
+                            ),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    userRepList[index]['plate'],
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        color: const Color.fromARGB(
+                                            255, 17, 115, 196)),
+                                  ),
+                                  Text(reportDescription),
+                                  Text(
+                                    '$numOfEvidence submitted images',
+                                    style: TextStyle(fontSize: 12),
+                                  )
+                                ],
+                              ),
+                            ),
+                            Column(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  userRepList[index]['plate'],
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                      color: const Color.fromARGB(
-                                          255, 17, 115, 196)),
-                                ),
-                                Text(reportDescription),
-                                Text('$numOfEvidence submitted images', style: TextStyle(fontSize: 12),)
+                                Text(userRepList[index]['date']),
+                                Text(userRepList[index]['hour'])
                               ],
                             ),
-                          ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(userRepList[index]['date']),
-                              Text(userRepList[index]['hour'])
-                            ],
-                          ),
-                          SizedBox(width: 10,)
-                        ],
-                      ),
-                    )
-                  ],
+                            SizedBox(
+                              width: 10,
+                            )
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 );
               }))
     ]);

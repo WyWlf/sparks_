@@ -107,9 +107,9 @@ class _HomePageState extends State<HomePage> {
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'An error has occurred. Please check your connection and try again.'),
+          SnackBar(
+            content: Text( 
+                'An error has occurred. Please check your connection and try again. ${error}'),
           ),
         );
       }
