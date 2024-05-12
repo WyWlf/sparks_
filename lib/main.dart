@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -10,13 +11,35 @@ import 'package:page_transition/page_transition.dart';
 import 'package:sparks/pages/dashboard.dart';
 import 'package:sparks/pages/guest.dart';
 import 'package:sparks/pages/login.dart';
+import 'package:sparks/pages/received_reports.dart';
 import 'package:sparks/pages/signup.dart';
 import 'package:sparks/widgets/bgimage.dart';
 import 'package:sparks/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
+import 'widget/local_notification.dart';
+
 void main() async {
+  await AwesomeNotifications().initialize(null, [
+    NotificationChannel(
+      channelGroupKey: "basic_channel_group",
+      channelKey: "basic_channel",
+      channelName: "Basic Notification",
+      channelDescription: "Basic notifications channel",
+    )
+  ], channelGroups: [
+    NotificationChannelGroup(
+      channelGroupKey: "basic_channel_group",
+      channelGroupName: "Basic Group",
+    )
+  ]);
+  bool isAllowedToSendNotification =
+      await AwesomeNotifications().isNotificationAllowed();
+  if (!isAllowedToSendNotification) {
+    AwesomeNotifications().requestPermissionToSendNotifications();
+  }
+
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -27,6 +50,8 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
   const MyApp({super.key});
 
   // This widget is the root of your application
@@ -35,6 +60,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: const HomePage(),
+      navigatorKey: navigatorKey,
+      routes: {
+        '/received_reports': (context) => ReceivedReports()
+      },
     );
   }
 }
@@ -51,6 +80,14 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    AwesomeNotifications().setListeners(
+        onActionReceivedMethod: NotificationController.onActionReceivedMethod,
+        onNotificationCreatedMethod:
+            NotificationController.onNotificationCreatedMethod,
+        onNotificationDisplayedMethod:
+            NotificationController.onNotificationDisplayedMethod,
+        onDismissActionReceivedMethod:
+            NotificationController.onDismissActionReceivedMethod);
     _loadToken();
   }
 
@@ -83,7 +120,9 @@ class _HomePageState extends State<HomePage> {
     try {
       final response = await http.post(uri, body: body, headers: headers);
       var json = jsonDecode(response.body);
-      Navigator.pop(context);
+      if (mounted) {
+        Navigator.pop(context);
+      }
       if (json['resp']) {
         if (mounted) {
           Navigator.push(
@@ -108,9 +147,8 @@ class _HomePageState extends State<HomePage> {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text( 
-                'An error has occurred. Please check your connection and try again. ${error}'),
-          ),
+              content: Text(
+                  'An error has occurred. Please check your connection and try again. $error')),
         );
       }
     }

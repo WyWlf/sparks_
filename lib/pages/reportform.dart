@@ -8,6 +8,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sparks/pages/login.dart';
+import 'package:sparks/pages/received_reports.dart';
 import 'package:sparks/pages/report_overview.dart';
 import 'package:sparks/widgets/pages.dart';
 import 'package:http/http.dart' as http;
@@ -441,7 +442,27 @@ class _ReportPageState extends State<ReportPage> {
   }
 
   Widget _reportList() {
-    return Column(children: [
+    return Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+      Padding(
+        padding: EdgeInsets.all(8),
+        child: ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                PageTransition(
+                    child: ReceivedReports(), type: PageTransitionType.fade),
+              );
+            },
+            style: ButtonStyle(
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                      borderRadius: BorderRadius.horizontal(),
+                      side: BorderSide(color: Colors.black54))),
+              backgroundColor: MaterialStatePropertyAll(Colors.white),
+            ),
+            child: Text('View Received Reports',
+                style: TextStyle(color: Colors.black))),
+      ),
       Expanded(
           child: ListView.separated(
               itemCount: userRepList.length,
@@ -461,7 +482,9 @@ class _ReportPageState extends State<ReportPage> {
                     Navigator.push(
                       context,
                       PageTransition(
-                          child: ReportOverview(report: userRepList[index],),
+                          child: ReportOverview(
+                            report: userRepList[index],
+                          ),
                           type: PageTransitionType.fade),
                     )
                   },
@@ -511,6 +534,7 @@ class _ReportPageState extends State<ReportPage> {
                               ),
                             ),
                             Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(userRepList[index]['date']),
@@ -536,38 +560,37 @@ class _ReportPageState extends State<ReportPage> {
       children: [
         PagesBackground(),
         Scaffold(
-          backgroundColor: Color.fromARGB(0, 255, 255, 255),
-          appBar: PreferredSize(
-            preferredSize: Size.fromHeight(150),
-            child: AppBar(
-              iconTheme: IconThemeData(color: Colors.white),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              title: const Text(
-                'Reports',
-                style: TextStyle(
-                  fontSize: 30,
-                  color: Colors.white,
+            backgroundColor: Color.fromARGB(0, 255, 255, 255),
+            appBar: PreferredSize(
+              preferredSize: Size.fromHeight(130),
+              child: AppBar(
+                iconTheme: IconThemeData(color: Colors.white),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                title: const Text(
+                  'Filed Reports',
+                  style: TextStyle(
+                    fontSize: 30,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
-          ),
-          //add new form
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              if (!_isFormVisible) {
-                setState(() {
-                  _isFormVisible = !_isFormVisible;
-                });
-              }
-            },
-            child: const Icon(
-              Icons.upload_file_sharp,
-              color: Colors.black,
+            //add new form
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                if (!_isFormVisible) {
+                  setState(() {
+                    _isFormVisible = !_isFormVisible;
+                  });
+                }
+              },
+              child: const Icon(
+                Icons.upload_file_sharp,
+                color: Colors.black,
+              ),
             ),
-          ),
-          body: _isFormVisible ? _reportForm() : _reportList(),
-        )
+            body: _isFormVisible ? _reportForm() : _reportList())
       ],
     );
   }

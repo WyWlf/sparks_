@@ -7,11 +7,11 @@ class NotificationsPage extends StatefulWidget {
   const NotificationsPage({Key? key}) : super(key: key);
 
   @override
-  _NotificationsPageState createState() => _NotificationsPageState();
+  NotificationsPageState createState() => NotificationsPageState();
 }
 
-class _NotificationsPageState extends State<NotificationsPage> {
-  List<Notification> _notifications = [
+class NotificationsPageState extends State<NotificationsPage> {
+  final List<Notification> _notifications = [
     Notification(
       title: 'Parking Lot Full',
       message: 'The parking lot at Pay-to-Park is currently full.',

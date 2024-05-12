@@ -1,15 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sparks/api/access_token.dart';
 import 'package:sparks/main.dart';
 import 'package:sparks/pages/map.dart';
-import 'package:sparks/pages/notifications.dart';
 import 'package:sparks/pages/reportform.dart';
 import 'package:sparks/pages/settings.dart';
+import 'package:sparks/pages/transac_history.dart';
 import 'package:sparks/widgets/pagesbg.dart';
 import 'package:sparks/widgets/pages.dart';
 import 'package:http/http.dart' as http;
@@ -25,6 +26,7 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   late Timer _timer;
   late Timer _newTimer;
+  late Timer _notifTimer;
   String openingTime = '';
   String closingTime = '';
   String get token => widget.token;
@@ -90,17 +92,48 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
+  void getNotifications() async {
+    final uri =
+        Uri.parse('http://192.168.254.104:5173/api/getUserNotificationReports');
+    final body = jsonEncode({'token': token});
+    final headers = {'Content-Type': 'application/json'};
+    try {
+      final response = await http.post(uri, body: body, headers: headers);
+      var json = jsonDecode(response.body);
+      setState(() {
+        if (json['resp']) {
+          AwesomeNotifications().createNotification(
+            content: NotificationContent(
+              criticalAlert: true,
+                id: 1,
+                channelKey: "basic_channel",
+                title: "A report has been received.",
+                body:
+                    "Someone has submitted a report concerning your vehicle."),
+          );
+        }
+      });
+    } catch (error) {
+      print(error);
+    }
+  }
+
   @override
   void initState() {
     getConfig();
     getTransaction();
     parkingSpaces();
+    getNotifications();
 
     _timer = Timer.periodic(const Duration(seconds: 60), (timer) {
       getTransaction();
     });
-    _newTimer = Timer.periodic(const Duration(seconds: 60), (timer) {
+    _newTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       parkingSpaces();
+    });
+
+    _notifTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      getNotifications();
     });
     super.initState();
     // Call your method to start fetching transactions and set up the timer
@@ -111,6 +144,7 @@ class _DashboardState extends State<Dashboard> {
     // Cancel the timer when the widget is disposed
     _timer.cancel();
     _newTimer.cancel();
+    _notifTimer.cancel();
     super.dispose();
   }
 
@@ -179,25 +213,25 @@ class _DashboardState extends State<Dashboard> {
                 ),
 
                 //notification button
-                actions: <Widget>[
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const NotificationsPage(),
-                      ));
-                    },
-                    child: const Padding(
-                      padding: EdgeInsets.only(right: 20),
-                      child: Hero(
-                        tag: 'notification',
-                        child: Icon(
-                          Icons.notifications,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                // actions: <Widget>[
+                //   GestureDetector(
+                //     onTap: () {
+                //       Navigator.of(context).push(MaterialPageRoute(
+                //         builder: (context) => const NotificationsPage(),
+                //       ));
+                //     },
+                //     child: const Padding(
+                //       padding: EdgeInsets.only(right: 20),
+                //       child: Hero(
+                //         tag: 'notification',
+                //         child: Icon(
+                //           Icons.notifications,
+                //           color: Colors.white,
+                //         ),
+                //       ),
+                //     ),
+                //   ),
+                // ],
               ),
             ),
 
@@ -232,12 +266,23 @@ class _DashboardState extends State<Dashboard> {
                         ));
                       },
                     ),
+                    // ListTile(
+                    //   leading: const Icon(Icons.notifications),
+                    //   title: const Text('NOTIFICATIONS'),
+                    //   onTap: () {
+                    //     Navigator.of(context).push(MaterialPageRoute(
+                    //       builder: (context) => const NotificationsPage(),
+                    //     ));
+                    //   },
+                    // ),
                     ListTile(
-                      leading: const Icon(Icons.notifications),
-                      title: const Text('NOTIFICATIONS'),
+                      leading: const Icon(Icons.car_crash_outlined),
+                      title: const Text('PARKING HISTORY'),
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const NotificationsPage(),
+                          builder: (context) => TransactionHistory(
+                            token: widget.token,
+                          ),
                         ));
                       },
                     ),
@@ -324,7 +369,8 @@ class _DashboardState extends State<Dashboard> {
                             direction: Axis.vertical,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Container(
                                     padding:
@@ -344,8 +390,7 @@ class _DashboardState extends State<Dashboard> {
                                               : convertTo12HourFormat(
                                                   openingTime),
                                           style: const TextStyle(
-                                              color: Colors.blue,
-                                              fontSize: 12),
+                                              color: Colors.blue, fontSize: 12),
                                         ),
                                       ],
                                     ),
@@ -368,8 +413,7 @@ class _DashboardState extends State<Dashboard> {
                                               : convertTo12HourFormat(
                                                   closingTime),
                                           style: const TextStyle(
-                                              color: Colors.red,
-                                              fontSize: 12),
+                                              color: Colors.red, fontSize: 12),
                                         ),
                                       ],
                                     ),
