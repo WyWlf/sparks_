@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
+  late Timer _timer;
   int currentFloor = 0;
   int availableSlots = 0;
   late Map<String, dynamic> floors = {};
@@ -105,24 +107,31 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     parkingSpaces();
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      parkingSpaces();
+    });
     super.initState();
   }
 
   @override
   void dispose() {
     // Cancel the timer when the widget is disposed
+    _timer.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!loading) {
-      Navigator.of(context).pop();
+    if (mounted) {
+      if (!loading) {
+        Navigator.of(context).pop();
+      }
     }
 
     if (floors.isNotEmpty) {
-      availableSlots = int.parse(floors['floorInfo'][currentFloor]['max_space']) -
-          int.parse(floors['floorInfo'][currentFloor]['used_space']);
+      availableSlots =
+          int.parse(floors['floorInfo'][currentFloor]['max_space']) -
+              int.parse(floors['floorInfo'][currentFloor]['used_space']);
     }
 
     return Stack(
@@ -149,9 +158,36 @@ class _MapPageState extends State<MapPage> {
           ),
           body: Column(
             children: [
-              Text('Available slots: ' '$availableSlots',
+              Text('Total Available Slots: ' '$availableSlots',
                   style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold)),
+                      fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(
+                height: 14,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.car_crash_outlined,
+                    color: Colors.blue.shade700,
+                    size: 24,
+                  ),
+                  const Text('Available slots',
+                      style: TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.normal)),
+                  const SizedBox(
+                    width: 14,
+                  ),
+                  const Icon(
+                    Icons.car_crash_outlined,
+                    color: Colors.red,
+                    size: 24,
+                  ),
+                  const Text('Used slots',
+                      style: TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.normal)),
+                ],
+              ),
               const SizedBox(
                 height: 30,
               ),
@@ -162,30 +198,74 @@ class _MapPageState extends State<MapPage> {
                             height: 25,
                           ),
                       itemBuilder: (_, index) {
-                        return Column(                       
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Section: ${_floorImages[index]['data'][index]['section_name']}',
-                              style: const TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
+                        return Container(
+                          margin: const EdgeInsets.all(12.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.black,
+                              width: 2,
                             ),
-                            Text(
-                              'Available space: ${_floorImages[index]['data'][index]['label_count'] - _floorImages[index]['data'][index]['label_used']}',
-                              style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color.fromARGB(255, 9, 117, 12)),
-                            ),
-                            Text(
-                              'Used space: ${_floorImages[index]['data'][index]['label_used']}',
-                              style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red),
-                            ),
-                            Image.memory(base64Decode(_floorImages[index]['img']))
-                          ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                decoration: const BoxDecoration(
+                                    border: Border(
+                                  bottom:
+                                      BorderSide(color: Colors.black, width: 1),
+                                )),
+                                child: Text(
+                                  'Section: ${_floorImages[index]['data'][index]['section_name']}',
+                                  style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 12,
+                              ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.car_crash_outlined,
+                                        color: Colors.blue.shade700,
+                                        size: 64,
+                                      ),
+                                      Text(
+                                        '${_floorImages[index]['data'][index]['label_count'] - _floorImages[index]['data'][index]['label_used']}',
+                                        style: const TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black),
+                                      )
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.car_crash_outlined,
+                                        color: Colors.red,
+                                        size: 64,
+                                      ),
+                                      Text(
+                                        ' ${_floorImages[index]['data'][index]['label_used']}',
+                                        style: const TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black),
+                                      )
+                                    ],
+                                  )
+                                ],
+                              )
+                            ],
+                          ),
                         );
                       }))
             ],

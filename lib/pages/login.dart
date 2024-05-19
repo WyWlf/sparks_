@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sparks/pages/dashboard.dart';
+import 'package:sparks/pages/feedbackform.dart';
 import 'package:sparks/pages/signup.dart';
 import 'package:sparks/widgets/decoration.dart';
 import 'package:sparks/widgets/widget.dart';
@@ -206,7 +207,15 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           RichText(
                               text: TextSpan(children: <TextSpan>[
-                            TextSpan(text: "Forgot Password? ", style: tspan)
+                            TextSpan(
+                                text: "Forgot Password? ",
+                                style: tspan,
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () async {
+                                    Navigator.of(context).push(PageTransition(
+                                        child: FeedbackForm(),
+                                        type: PageTransitionType.fade));
+                                  })
                           ])),
 
                           Row(

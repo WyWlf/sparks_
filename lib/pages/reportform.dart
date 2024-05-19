@@ -181,6 +181,8 @@ class _ReportPageState extends State<ReportPage> {
   }
 
   Future<int> submitFullForm() async {
+    plate.text = plate.text.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+    plate.text = plate.text.toUpperCase();
     var json = jsonEncode({
       'token': token,
       'plate': plate.text,
@@ -226,8 +228,6 @@ class _ReportPageState extends State<ReportPage> {
               decoration: InputDecoration(
                 labelText: 'Plate number of the involved vehicle',
               ),
-              onChanged: (value) =>
-                  {plate.text = value.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')},
             ),
 
             //concerns

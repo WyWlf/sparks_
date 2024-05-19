@@ -62,6 +62,8 @@ class _SignPageState extends State<SignPage> {
             color: Colors.green, size: 40),
       ),
     );
+    plate.text = plate.text.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+    plate.text = plate.text.toUpperCase();
     var json = jsonEncode({
       'nickname': nickname.text,
       'plate': plate.text,
@@ -195,12 +197,13 @@ class _SignPageState extends State<SignPage> {
                                 if (value!.isEmpty) {
                                   return "Enter Plate Number";
                                 }
-                                bool plateNumber =
-                                    RegExp(r"^[a-zA-Z0-9]").hasMatch(value);
-                                if (!plateNumber) {
-                                  return "Please enter valid Plate Number(ABC123)";
-                                }
                                 return null;
+                                // bool plateNumber =
+                                //     RegExp(r"^[a-zA-Z0-9]").hasMatch(value);
+                                // if (!plateNumber) {
+                                //   return "Please enter valid Plate Number(ABC123)";
+                                // }
+                                // return null;
                               }),
 
                           //email

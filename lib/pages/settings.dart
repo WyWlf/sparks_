@@ -72,6 +72,7 @@ class _SettingsState extends State<Settings> {
     if (verifyForm()) {
       final uri = Uri.parse('http://192.168.254.104:5173/api/updateUserInfo');
       final headers = {'Content-Type': 'application/json'};
+      plate.text = plate.text.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
       final body = jsonEncode({
         'token': token,
         'username': nickname.text,
@@ -212,10 +213,10 @@ class _SettingsState extends State<Settings> {
                           decoration: const InputDecoration(
                             labelText: 'Plate Number',
                           ),
-                          onChanged: (value) => {
-                            plate.text =
-                                value.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')
-                          },
+                          // onChanged: (value) => {
+                          //   plate.text =
+                          //       value.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')
+                          // },
                         ),
                         TextFormField(
                           controller: email,
@@ -226,23 +227,6 @@ class _SettingsState extends State<Settings> {
                         if (_passChange)
                           Column(
                             children: [
-                              Container(
-                                decoration:
-                                    const BoxDecoration(color: Colors.white),
-                                child: TextFormField(
-                                  obscureText: true,
-                                  controller: currPass,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Current Password',
-                                  ),
-                                  validator: (value) {
-                                    if (value!.isEmpty) {
-                                      return "Enter Password";
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
                               Container(
                                 decoration:
                                     const BoxDecoration(color: Colors.white),

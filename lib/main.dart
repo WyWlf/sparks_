@@ -27,6 +27,7 @@ void main() async {
       channelKey: "basic_channel",
       channelName: "Basic Notification",
       channelDescription: "Basic notifications channel",
+      defaultRingtoneType: DefaultRingtoneType.Notification
     )
   ], channelGroups: [
     NotificationChannelGroup(
@@ -98,6 +99,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         token = retrievedToken;
       });
+     await _verifyToken();
     } else {
       setState(() {
         token = '';

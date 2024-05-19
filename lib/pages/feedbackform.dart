@@ -3,160 +3,165 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:sparks/widgets/pagesbg.dart';
 import 'package:http/http.dart' as http;
+import 'package:sparks/widgets/pallete.dart';
 
 class FeedbackForm extends StatefulWidget {
+  const FeedbackForm({super.key});
+
   @override
-  _FeedbackFormState createState() => _FeedbackFormState();
+  FeedbackFormState createState() => FeedbackFormState();
 }
 
-class _FeedbackFormState extends State<FeedbackForm> {
-  int _rating = 2; // Initial rating value (out of 5)
-  String _feedback = ""; // To store user feedback text
+class FeedbackFormState extends State<FeedbackForm> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController email = TextEditingController();
+  void passwordReset() async {
+    if (email.text.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Email address is empty.'),
+          ),
+        );
+      }
+    } else {
+      final uri = Uri.parse('http://192.168.254.104:5173/api/emailSender');
+      final headers = {'Content-Type': 'application/json'};
+      final body = jsonEncode({
+        'email': email.text,
+      });
+      try {
+        var client = http.Client();
+        final response = await client.post(uri, body: body, headers: headers);
+        if (response.statusCode == 200) {
+          var json = response.body;
+          var parseJson = jsonDecode(json);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${parseJson['msg']}'),
+              ),
+            );
+          }
+        }
+      } catch (error) {
+        // Handle network errors or exceptions
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'An error occurred. Please check your connection and try again.'),
+            ),
+          );
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         //background
-        PagesBackground(),
+        const PagesBackground(),
         Scaffold(
-          backgroundColor: Color.fromARGB(0, 255, 255, 255),
-          appBar: PreferredSize(
-            preferredSize: Size.fromHeight(130),
-            child: AppBar(
-              iconTheme: IconThemeData(color: Colors.white),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              toolbarHeight: 80,
-              title: Text(
-                'Feedback Form ',
-                style: TextStyle(
-                  fontSize: 25,
-                  color: Colors.white,
+            backgroundColor: const Color.fromARGB(0, 255, 255, 255),
+            appBar: PreferredSize(
+              preferredSize: const Size.fromHeight(130),
+              child: AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                toolbarHeight: 80,
+                title: const Text(
+                  'Password reset',
+                  style: TextStyle(
+                    fontSize: 25,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Container(
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      //FORM STARTS HERE
-                      child: Column(
-                        children: [
-                          const Text(
-                            'RATE US!!',
-                            style: TextStyle(
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          //RATING
-                          const Text(
-                            'How do you rate this app?',
-                            style: TextStyle(
-                              fontSize: 18.0,
-                            ),
-                          ),
-                          const SizedBox(height: 10.0),
-                          //STARS
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(
-                                5, (index) => _buildRatingStar(index)),
-                          ),
-                        ],
-                      )),
-
-                  const SizedBox(height: 20.0),
-
-                  // Feedback text field
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Leave your feedback here...',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: const BorderSide(
-                          color: Colors.grey, // Optional border color
-                        ),
-                      ),
-                    ),
-                    maxLines: 6,
-                    //saving data
-                    onChanged: (value) => setState(() => _feedback = value),
+            body: Container(
+                decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(24),
+                        topRight: Radius.circular(24))),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: <Widget>[
+                      Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Text(
+                                'Enter the email address that is connected to your account.',
+                                softWrap: true,
+                                style: TextStyle(),
+                              ),
+                              TextFormField(
+                                style: def,
+                                controller: email,
+                                decoration: const InputDecoration(
+                                  icon: Icon(
+                                    Icons.email_outlined,
+                                    size: 24,
+                                  ),
+                                  labelText: 'Enter your email address',
+                                ),
+                                validator: validateEmail,
+                              ),
+                              const SizedBox(
+                                height: 24,
+                              ),
+                              const Text(
+                                "If your account has no linked email address. You will need to submit a ticket to the support team here at sparks@gmail.com and submit necessary information for your account's retrieval. ",
+                                softWrap: true,
+                                style: TextStyle(),
+                              ),
+                              const SizedBox(height: 12),
+                              ElevatedButton(
+                                onPressed: () {
+                                   if (_formKey.currentState!.validate()) {
+                                    passwordReset();
+                                   }
+                                },
+                                style: const ButtonStyle(
+                                  elevation: MaterialStatePropertyAll(3),
+                                  backgroundColor:
+                                      MaterialStatePropertyAll(Colors.green),
+                                ),
+                                child: const Text(
+                                  'Reset password',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          )),
+                    ],
                   ),
-                  const SizedBox(height: 20.0),
-
-                  // Submit button
-                  MaterialButton(
-                    height: 40,
-                    color: Color.fromARGB(255, 18, 229, 28),
-                    splashColor: Colors.red,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    elevation: 10,
-                    onPressed: () async {
-                      // create json var to use it for calling
-                      var feedbackData = {
-                        'rating': _rating,
-                        'feedback': _feedback,
-                      };
-                      //test
-                      print('Feedback data: $feedbackData');
-
-                      // Send a POST request to the API with the feedback data
-                      var response = await http.post(
-                        Uri.parse(
-                            'http://192.168.254.104:5173/api/addReportForm'),
-                        headers: {
-                          'Content-Type': 'application/json; charset=UTF-8',
-                        },
-                        body: jsonEncode(feedbackData),
-                      );
-
-                      // Check if the request was successful
-                      if (response.statusCode == 200) {
-                        // Show a success message or navigate back
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text('Feedback submitted successfully')),
-                        );
-                      } else {
-                        // Show an error message
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error submitting feedback')),
-                        );
-                      }
-                    },
-                    child: const Text('Submit'),
-                  )
-                ],
-              ),
-            ),
-          ),
-        )
+                )))
       ],
     );
   }
+}
 
-  // Function to build a single rating star icon
-  Widget _buildRatingStar(int index) {
-    return IconButton(
-      icon: Icon(
-        index < _rating ? Icons.star : Icons.star_border,
-        color: Colors.amber,
-      ),
-      onPressed: () => setState(() => _rating = index + 1),
-    );
+String? validateEmail(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'Please enter an email address';
   }
+
+  // Regular expression for email validation
+  String pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
+  RegExp regex = RegExp(pattern);
+
+  if (!regex.hasMatch(value)) {
+    return 'Enter a valid email address';
+  }
+  return null;
 }

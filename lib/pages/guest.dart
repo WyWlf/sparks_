@@ -62,8 +62,10 @@ class _GuestModeState extends State<GuestMode> {
             int.parse(parkingJson['spaces'][0]['used']);
         used = int.parse(parkingJson['spaces'][0]['used']);
         total = available + used;
-        availablePercent = (available / total) * 100;
-        availablePercent = double.parse(availablePercent.toStringAsFixed(2));
+        if (total > 0) {
+          availablePercent = (available / total) * 100;
+          availablePercent = double.parse(availablePercent.toStringAsFixed(2));
+        }
         if (used > 0) {
           usedPercent = (used / total) * 100;
           usedPercent = double.parse(usedPercent.toStringAsFixed(2));

@@ -104,7 +104,7 @@ class _DashboardState extends State<Dashboard> {
         if (json['resp']) {
           AwesomeNotifications().createNotification(
             content: NotificationContent(
-              criticalAlert: true,
+                criticalAlert: true,
                 id: 1,
                 channelKey: "basic_channel",
                 title: "A report has been received.",
@@ -125,14 +125,14 @@ class _DashboardState extends State<Dashboard> {
     parkingSpaces();
     getNotifications();
 
-    _timer = Timer.periodic(const Duration(seconds: 60), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
       getTransaction();
     });
-    _newTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+    _newTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       parkingSpaces();
     });
 
-    _notifTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+    _notifTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       getNotifications();
     });
     super.initState();
@@ -179,8 +179,10 @@ class _DashboardState extends State<Dashboard> {
             int.parse(parkingJson['spaces'][0]['used']);
         used = int.parse(parkingJson['spaces'][0]['used']);
         total = available + used;
-        availablePercent = (available / total) * 100;
-        availablePercent = double.parse(availablePercent.toStringAsFixed(2));
+        if (total > 0) {
+          availablePercent = (available / total) * 100;
+          availablePercent = double.parse(availablePercent.toStringAsFixed(2));
+        }
         if (used > 0) {
           usedPercent = (used / total) * 100;
           usedPercent = double.parse(usedPercent.toStringAsFixed(2));
