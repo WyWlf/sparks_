@@ -25,7 +25,7 @@ class _MapPageState extends State<MapPage> {
     setState(() {
       loading = true;
     });
-    final uri = Uri.parse('http://192.168.254.104:5173/api/getParkingFloors');
+    final uri = Uri.parse('http://192.168.1.10:5173/api/getParkingFloors');
     try {
       final response = await http.get(uri);
       var json = jsonDecode(response.body);
@@ -86,7 +86,7 @@ class _MapPageState extends State<MapPage> {
 
   void getImages() async {
     _floorImages = [];
-    final uri = Uri.parse('http://192.168.254.104:5173/api/getParkingImages');
+    final uri = Uri.parse('http://192.168.1.10:5173/api/getParkingImages');
     final body = jsonEncode({
       'imageName': floors['sections'],
       'id': floors['row'][currentFloor]['id']
@@ -129,9 +129,11 @@ class _MapPageState extends State<MapPage> {
     }
 
     if (floors.isNotEmpty) {
-      availableSlots =
-          int.parse(floors['floorInfo'][currentFloor]['max_space']) -
-              int.parse(floors['floorInfo'][currentFloor]['used_space']);
+      if(floors.length <= currentFloor) {
+        availableSlots =
+            int.parse(floors['floorInfo'][currentFloor]['max_space']) -
+                int.parse(floors['floorInfo'][currentFloor]['used_space']);
+      } 
     }
 
     return Stack(

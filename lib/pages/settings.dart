@@ -29,7 +29,7 @@ class _SettingsState extends State<Settings> {
   TextEditingController currPass = TextEditingController();
   final _formfield = GlobalKey<FormState>();
   void getUserInfo() async {
-    final uri = Uri.parse('http://192.168.254.104:5173/api/userInfo');
+    final uri = Uri.parse('http://192.168.1.10:5173/api/userInfo');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode({'token': token, 'onlyUsers': true});
     try {
@@ -70,9 +70,10 @@ class _SettingsState extends State<Settings> {
 
   void updateAccount() async {
     if (verifyForm()) {
-      final uri = Uri.parse('http://192.168.254.104:5173/api/updateUserInfo');
+      final uri = Uri.parse('http://192.168.1.10:5173/api/updateUserInfo');
       final headers = {'Content-Type': 'application/json'};
       plate.text = plate.text.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+      plate.text = plate.text.toUpperCase();
       final body = jsonEncode({
         'token': token,
         'username': nickname.text,

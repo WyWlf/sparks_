@@ -158,7 +158,7 @@ class _ReportPageState extends State<ReportPage> {
     });
     final body = json;
     final headers = {'Content-Type': 'application/json'};
-    final uri = Uri.parse('http://192.168.254.104:5173/api/getUserReportList');
+    final uri = Uri.parse('http://192.168.1.10:5173/api/getUserReportList');
     try {
       var client = http.Client();
       final response = await client.post(uri, body: body, headers: headers);
@@ -190,7 +190,7 @@ class _ReportPageState extends State<ReportPage> {
       'files': localObj,
     });
 
-    final uri = Uri.parse('http://192.168.254.104:5173/api/addReportForm');
+    final uri = Uri.parse('http://192.168.1.10:5173/api/addReportForm');
     final body = json;
     final headers = {'Content-Type': 'application/json'};
 
@@ -212,6 +212,7 @@ class _ReportPageState extends State<ReportPage> {
   }
 
   Widget _reportForm() {
+    
     return Container(
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
         decoration: BoxDecoration(
@@ -273,21 +274,13 @@ class _ReportPageState extends State<ReportPage> {
                               ),
 
                               // Open Camera
-                              ListTile(
-                                leading: Icon(Icons.camera),
-                                title: Text('Open Camera'),
-                                // onTap: () async {
-                                //   final images =
-                                //       await _captureImages();
-                                //   setState(() {
-                                //     if (images != null) {
-                                //       _selectedImages = images;
-                                //       _displayedImage = images[
-                                //           0]; // Display the first captured image
-                                //     }
-                                //   });
-                                // },
-                              ),
+                              // ListTile(
+                              //   leading: Icon(Icons.camera),
+                              //   title: Text('Open Camera'),
+                              //   onTap: () async {
+
+                              //   },
+                              // ),
                             ],
                           );
                         },
