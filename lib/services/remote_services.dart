@@ -7,7 +7,7 @@ class RemoteService {
   Future<List<Welcome>?> getPosts() async {
     try {
       final response = await _client.get(
-          Uri.parse('http://192.168.1.10:5173/api/getLabels'));
+          Uri.parse('http://192.168.254.104:5173/api/getLabels'));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

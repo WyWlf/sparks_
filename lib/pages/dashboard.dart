@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:sparks/api/access_token.dart';
 import 'package:sparks/main.dart';
 import 'package:sparks/pages/map.dart';
+import 'package:sparks/pages/qr.dart';
 import 'package:sparks/pages/reportform.dart';
 import 'package:sparks/pages/settings.dart';
 import 'package:sparks/pages/transac_history.dart';
@@ -37,7 +38,7 @@ class _DashboardState extends State<Dashboard> {
   var config = {};
 
   void getTransaction() async {
-    final uri = Uri.parse('http://192.168.1.10:5173/api/getUserTransaction');
+    final uri = Uri.parse('http://192.168.254.104:5173/api/getUserTransaction');
     final body = jsonEncode({'token': token});
     final headers = {'Content-Type': 'application/json'};
     try {
@@ -58,7 +59,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void parkingSpaces() async {
-    final uri = Uri.parse('http://192.168.1.10:5173/api/getParkingFloors');
+    final uri = Uri.parse('http://192.168.254.104:5173/api/getParkingFloors');
     try {
       final response = await http.get(uri);
       var json = jsonDecode(response.body);
@@ -77,7 +78,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void getConfig() async {
-    final uri = Uri.parse('http://192.168.1.10:5173/api/getConfiguration');
+    final uri = Uri.parse('http://192.168.254.104:5173/api/getConfiguration');
     try {
       final response = await http.get(uri);
       var json = jsonDecode(response.body);
@@ -94,7 +95,7 @@ class _DashboardState extends State<Dashboard> {
 
   void getNotifications() async {
     final uri =
-        Uri.parse('http://192.168.1.10:5173/api/getUserNotificationReports');
+        Uri.parse('http://192.168.254.104:5173/api/getUserNotificationReports');
     final body = jsonEncode({'token': token});
     final headers = {'Content-Type': 'application/json'};
     try {
@@ -314,6 +315,15 @@ class _DashboardState extends State<Dashboard> {
                           builder: (context) => Settings(
                             token: widget.token,
                           ),
+                        ));
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.qr_code),
+                      title: const Text('SHARE APP'),
+                      onTap: () async {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const QR(),
                         ));
                       },
                     ),

@@ -18,7 +18,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
 
   void getHistory() async {
     final uri =
-        Uri.parse('http://192.168.1.10:5173/api/userTransactionHistory');
+        Uri.parse('http://192.168.254.104:5173/api/userTransactionHistory');
     final body = jsonEncode({'token': token});
     final headers = {'Content-Type': 'application/json'};
     try {

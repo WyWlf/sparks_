@@ -53,7 +53,7 @@ class _ReceivedReportState extends State<ReceivedReports> {
     });
     final body = json;
     final headers = {'Content-Type': 'application/json'};
-    final uri = Uri.parse('http://192.168.1.10:5173/api/readasUserReport');
+    final uri = Uri.parse('http://192.168.254.104:5173/api/readasUserReport');
     try {
       var client = http.Client();
       await client.post(uri, body: body, headers: headers);
@@ -78,7 +78,7 @@ class _ReceivedReportState extends State<ReceivedReports> {
     final body = json;
     final headers = {'Content-Type': 'application/json'};
     final uri =
-        Uri.parse('http://192.168.1.10:5173/api/getUserReceivedReport');
+        Uri.parse('http://192.168.254.104:5173/api/getUserReceivedReport');
     try {
       var client = http.Client();
       final response = await client.post(uri, body: body, headers: headers);

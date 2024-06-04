@@ -50,7 +50,7 @@ class NotificationsPageState extends State<NotificationsPage> {
               elevation: 0,
               toolbarHeight: 80,
               title: Text(
-                'Notifications',
+                'Notifications', 
                 style: TextStyle(
                   fontSize: 30,
                   color: Colors.white,

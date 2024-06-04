@@ -71,7 +71,7 @@ class _SignPageState extends State<SignPage> {
       'password': newpass.text,
       'role': 1
     });
-    final uri = Uri.parse('http://192.168.1.10:5173/api/addClientUsers');
+    final uri = Uri.parse('http://192.168.254.104:5173/api/addClientUsers');
     final body = json;
     final headers = {'Content-Type': 'application/json'};
 
